@@ -2,18 +2,21 @@
 
 import { useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
+import { parseTags } from '@/lib/utils';
 
 interface BlogPost {
   id: string;
-  week: number;
-  year: number;
   title: string;
   excerpt: string;
   content: string;
   tags: string[];
   read_time: number;
   publish_date: string;
-  cover_image?: string;
+  cover_image_url?: string;
+  status: string;
+  author_name: string;
+  created_at: string;
+  updated_at: string;
 }
 
 export default function BlogIndex() {
@@ -51,7 +54,8 @@ export default function BlogIndex() {
   const allTags = useMemo(() => {
     const tags = new Set<string>();
     allPosts.forEach(post => {
-      post.tags.forEach(tag => tags.add(tag));
+      const postTags = parseTags(post.tags);
+      postTags.forEach(tag => tags.add(tag));
     });
     return Array.from(tags).sort();
   }, [allPosts]);
@@ -63,16 +67,21 @@ export default function BlogIndex() {
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
       posts = posts.filter(
-        post =>
-          post.title.toLowerCase().includes(query) ||
-          post.excerpt.toLowerCase().includes(query) ||
-          post.tags.some(tag => tag.toLowerCase().includes(query))
+        post => {
+          const postTags = parseTags(post.tags);
+          return post.title.toLowerCase().includes(query) ||
+            post.excerpt.toLowerCase().includes(query) ||
+            postTags.some(tag => tag.toLowerCase().includes(query));
+        }
       );
     }
 
     // Filter by tag
     if (selectedTag !== 'all') {
-      posts = posts.filter(post => post.tags.includes(selectedTag));
+      posts = posts.filter(post => {
+        const postTags = parseTags(post.tags);
+        return postTags.includes(selectedTag);
+      });
     }
 
     return posts;
@@ -88,7 +97,7 @@ export default function BlogIndex() {
         <div className="mb-12 text-center">
           <h1 className="text-4xl md:text-5xl font-bold mb-4">Weekly Blog</h1>
           <p className="text-xl text-[var(--color-text-secondary)]">New every week.</p>
-          <Link href="/admin" className="mt-4 inline-block text-sm text-[var(--color-accent-1)] hover:underline">
+          <Link href="/blog/new" className="mt-4 inline-block text-sm text-[var(--color-accent-1)] hover:underline">
             + Create New Post
           </Link>
         </div>
@@ -148,30 +157,43 @@ export default function BlogIndex() {
         {filteredPosts.length > 0 ? (
           <>
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
-              {visiblePosts.map((post) => (
-                <Link key={post.id} href={`/blog/${post.id}`} className="card group">
-                  <div className="mb-4">
-                    <span className="badge">Week {post.week}, {post.year}</span>
-                  </div>
-                  <h3 className="text-xl font-bold mb-3 group-hover:text-[var(--color-accent-1)] transition-colors">
-                    {post.title}
-                  </h3>
-                  <p className="text-[var(--color-text-secondary)] mb-4 line-clamp-3">
-                    {post.excerpt}
-                  </p>
-                  <div className="flex flex-wrap gap-2 mb-4">
-                    {post.tags.slice(0, 3).map(tag => (
-                      <span key={tag} className="badge text-xs">
-                        {tag}
-                      </span>
-                    ))}
-                  </div>
-                  <div className="flex items-center justify-between text-sm text-[var(--color-text-secondary)]">
-                    <span>{post.read_time} min read</span>
-                    <span>{new Date(post.publish_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
-                  </div>
-                </Link>
-              ))}
+              {visiblePosts.map((post) => {
+                const postTags = parseTags(post.tags);
+
+                return (
+                  <Link key={post.id} href={`/blog/${post.id}`} className="card group">
+                    {post.cover_image_url && (
+                      <div className="mb-4 -mx-6 -mt-6 h-48 overflow-hidden rounded-t-lg">
+                        <img
+                          src={post.cover_image_url}
+                          alt={post.title}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        />
+                      </div>
+                    )}
+                    <h3 className="text-xl font-bold mb-3 group-hover:text-[var(--color-accent-1)] transition-colors">
+                      {post.title}
+                    </h3>
+                    <p className="text-[var(--color-text-secondary)] mb-4 line-clamp-3">
+                      {post.excerpt}
+                    </p>
+                    <div className="flex flex-wrap gap-2 mb-4">
+                      {postTags.slice(0, 3).map((tag: string) => (
+                        <span key={tag} className="badge text-xs">
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+                    <div className="flex items-center justify-between text-sm text-[var(--color-text-secondary)]">
+                      <span>{post.read_time} min read</span>
+                      <span>{new Date(post.publish_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
+                    </div>
+                    <div className="mt-2 text-xs text-[var(--color-text-secondary)]">
+                      By {post.author_name}
+                    </div>
+                  </Link>
+                );
+              })}
             </div>
 
             {/* Load More Button */}

@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase';
+import { supabase, supabaseAdmin } from '@/lib/supabase';
+
+export const runtime = 'nodejs';
 
 // GET /api/chat/users - Fetch online users
 export async function GET() {
@@ -39,8 +41,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Upsert user presence
-    const { data, error } = await supabase
+    // Upsert user presence (using service role to bypass RLS)
+    const { data, error } = await supabaseAdmin
       .from('online_users')
       .upsert(
         {

@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase';
+import { supabase, supabaseAdmin } from '@/lib/supabase';
+
+export const runtime = 'nodejs';
 
 // GET /api/blog/[id] - Fetch a single blog post
 export async function GET(
@@ -9,7 +11,7 @@ export async function GET(
   try {
     const { id } = await params;
     const { data, error } = await supabase
-      .from('blog_posts')
+      .from('posts')
       .select('*')
       .eq('id', id)
       .single();
@@ -35,19 +37,20 @@ export async function PUT(
   try {
     const { id } = await params;
     const body = await request.json();
-    const { week, year, title, excerpt, content, tags, read_time, cover_image } = body;
+    const { title, excerpt, content, tags, read_time, cover_image_url, status, author_name } = body;
 
-    const { data, error } = await supabase
-      .from('blog_posts')
+    // Use service role for write operations
+    const { data, error } = await supabaseAdmin
+      .from('posts')
       .update({
-        week,
-        year,
         title,
         excerpt,
         content,
-        tags,
+        tags: typeof tags === 'string' ? tags : JSON.stringify(tags || []), // Store as JSON string
         read_time,
-        cover_image,
+        cover_image_url,
+        status,
+        author_name,
         updated_at: new Date().toISOString(),
       })
       .eq('id', id)
@@ -74,8 +77,9 @@ export async function DELETE(
 ) {
   try {
     const { id } = await params;
-    const { error } = await supabase
-      .from('blog_posts')
+    // Use service role for write operations
+    const { error } = await supabaseAdmin
+      .from('posts')
       .delete()
       .eq('id', id);
 

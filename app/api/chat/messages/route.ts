@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase';
+import { supabase, supabaseAdmin } from '@/lib/supabase';
 import { pusherServer } from '@/lib/pusher';
+
+export const runtime = 'nodejs';
 
 // GET /api/chat/messages - Fetch chat messages
 export async function GET(request: NextRequest) {
@@ -46,8 +48,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Insert message into database
-    const { data, error } = await supabase
+    // Insert message into database (using service role to bypass RLS)
+    const { data, error } = await supabaseAdmin
       .from('chat_messages')
       .insert([
         {

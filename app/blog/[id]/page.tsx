@@ -3,18 +3,22 @@
 import { use, useState, useEffect } from 'react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import ChatRoom from '@/components/ChatRoom';
+import { parseTags } from '@/lib/utils';
 
 interface BlogPost {
   id: string;
-  week: number;
-  year: number;
   title: string;
   excerpt: string;
   content: string;
   tags: string[];
   read_time: number;
   publish_date: string;
-  cover_image?: string;
+  cover_image_url?: string;
+  status: string;
+  author_name: string;
+  created_at: string;
+  updated_at: string;
 }
 
 export default function BlogPost({ params }: { params: Promise<{ id: string }> }) {
@@ -116,24 +120,34 @@ export default function BlogPost({ params }: { params: Promise<{ id: string }> }
             Blog
           </Link>
           <span className="mx-2 text-[var(--color-text-secondary)]">/</span>
-          <span>Week {post.week}</span>
+          <span>{post.title}</span>
         </nav>
+
+        {/* Cover Image */}
+        {post.cover_image_url && (
+          <div className="mb-8 -mx-4 md:mx-0 rounded-lg overflow-hidden">
+            <img
+              src={post.cover_image_url}
+              alt={post.title}
+              className="w-full h-auto max-h-[500px] object-cover"
+            />
+          </div>
+        )}
 
         {/* Header */}
         <header className="mb-12">
-          <div className="mb-4">
-            <span className="badge text-base">Week {post.week}, {post.year}</span>
-          </div>
           <h1 className="text-4xl md:text-5xl font-bold mb-6 leading-tight">
             {post.title}
           </h1>
           <div className="flex flex-wrap items-center gap-4 text-[var(--color-text-secondary)]">
+            <span>By {post.author_name}</span>
+            <span>•</span>
             <time>{new Date(post.publish_date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</time>
             <span>•</span>
             <span>{post.read_time} min read</span>
             <span>•</span>
             <div className="flex gap-2">
-              {post.tags.map(tag => (
+              {parseTags(post.tags).map((tag: string) => (
                 <span key={tag} className="badge">
                   {tag}
                 </span>
@@ -241,6 +255,19 @@ export default function BlogPost({ params }: { params: Promise<{ id: string }> }
           </article>
         </div>
 
+        {/* Post Discussion Chat */}
+        <div className="mt-16">
+          <h2 className="text-2xl font-bold mb-6">Discussion</h2>
+          <p className="text-[var(--color-text-secondary)] mb-6">
+            Join the conversation about this post. Share your thoughts, ask questions, and connect with other readers.
+          </p>
+          <ChatRoom
+            channel={`post:${post.id}`}
+            title={`Chat about "${post.title}"`}
+            height="600px"
+          />
+        </div>
+
         {/* Post Footer */}
         <footer className="mt-16 pt-8 border-t border-[var(--color-border)]">
           {/* Author Bio */}
@@ -284,14 +311,23 @@ export default function BlogPost({ params }: { params: Promise<{ id: string }> }
               <div className="grid md:grid-cols-3 gap-6">
                 {relatedPosts.map(relatedPost => (
                   <Link key={relatedPost.id} href={`/blog/${relatedPost.id}`} className="card group">
-                    <div className="mb-3">
-                      <span className="badge text-sm">Week {relatedPost.week}, {relatedPost.year}</span>
-                    </div>
+                    {relatedPost.cover_image_url && (
+                      <div className="mb-3 -mx-6 -mt-6 h-32 overflow-hidden rounded-t-lg">
+                        <img
+                          src={relatedPost.cover_image_url}
+                          alt={relatedPost.title}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                    )}
                     <h3 className="text-lg font-bold mb-2 group-hover:text-[var(--color-accent-1)] transition-colors">
                       {relatedPost.title}
                     </h3>
-                    <p className="text-[var(--color-text-secondary)] text-sm line-clamp-2">
+                    <p className="text-[var(--color-text-secondary)] text-sm line-clamp-2 mb-2">
                       {relatedPost.excerpt}
+                    </p>
+                    <p className="text-xs text-[var(--color-text-secondary)]">
+                      By {relatedPost.author_name}
                     </p>
                   </Link>
                 ))}

@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase';
+import { supabase, supabaseAdmin } from '@/lib/supabase';
+
+export const runtime = 'nodejs';
 
 // GET /api/blog - Fetch all blog posts
 export async function GET(request: NextRequest) {
@@ -9,8 +11,9 @@ export async function GET(request: NextRequest) {
     const search = searchParams.get('search');
 
     let query = supabase
-      .from('blog_posts')
+      .from('posts')
       .select('*')
+      .eq('status', 'published') // Only show published posts
       .order('publish_date', { ascending: false });
 
     // Filter by tag if provided
@@ -42,28 +45,29 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { week, year, title, excerpt, content, tags, read_time, cover_image } = body;
+    const { title, excerpt, content, tags, read_time, cover_image_url, status, author_name } = body;
 
     // Validate required fields
-    if (!week || !year || !title || !excerpt || !content) {
+    if (!title || !excerpt || !content) {
       return NextResponse.json(
-        { error: 'Missing required fields' },
+        { error: 'Missing required fields: title, excerpt, and content are required' },
         { status: 400 }
       );
     }
 
-    const { data, error } = await supabase
-      .from('blog_posts')
+    // Use service role for write operations
+    const { data, error } = await supabaseAdmin
+      .from('posts')
       .insert([
         {
-          week,
-          year,
           title,
           excerpt,
           content,
-          tags: tags || [],
+          tags: JSON.stringify(tags || []), // Store as JSON string for text column
           read_time: read_time || 5,
-          cover_image,
+          cover_image_url: cover_image_url || null,
+          status: status || 'draft',
+          author_name: author_name || 'Anonymous',
         },
       ])
       .select()

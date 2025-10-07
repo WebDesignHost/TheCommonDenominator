@@ -94,13 +94,7 @@ export default function BlogIndex() {
     <div className="pt-28 pb-16">
       <div className="container">
         {/* Header */}
-        <div className="mb-12 text-center">
-          <h1 className="text-4xl md:text-5xl font-bold mb-4">Weekly Blog</h1>
-          <p className="text-xl text-[var(--color-text-secondary)]">New every week.</p>
-          <Link href="/blog/new" className="mt-4 inline-block text-sm text-[var(--color-accent-1)] hover:underline">
-            + Create New Post
-          </Link>
-        </div>
+        
 
         {/* Loading State */}
         {loading && (

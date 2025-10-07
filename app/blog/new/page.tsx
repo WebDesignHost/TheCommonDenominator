@@ -30,24 +30,76 @@ function NewBlogPostContent() {
     const urlKey = searchParams.get('key');
     const storedKey = localStorage.getItem('blog_admin_key');
 
+    const validateKey = async (key: string) => {
+      try {
+        const response = await fetch('/api/auth/validate-admin', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ secret: key }),
+        });
+
+        const data = await response.json();
+
+        if (response.ok && data.valid) {
+          localStorage.setItem('blog_admin_key', key);
+          setAuthKey(key);
+          setIsAuthenticated(true);
+          setShowAuthForm(false);
+        } else {
+          // Invalid key, clear localStorage and show auth form
+          localStorage.removeItem('blog_admin_key');
+          setIsAuthenticated(false);
+          setShowAuthForm(true);
+        }
+      } catch (err) {
+        // Validation failed, clear localStorage and show auth form
+        localStorage.removeItem('blog_admin_key');
+        setIsAuthenticated(false);
+        setShowAuthForm(true);
+      }
+    };
+
     if (urlKey) {
-      localStorage.setItem('blog_admin_key', urlKey);
-      setAuthKey(urlKey);
-      setIsAuthenticated(true);
-      setShowAuthForm(false);
+      validateKey(urlKey);
     } else if (storedKey) {
-      setAuthKey(storedKey);
-      setIsAuthenticated(true);
-      setShowAuthForm(false);
+      validateKey(storedKey);
     }
   }, [searchParams]);
 
-  const handleAuth = (e: FormEvent) => {
+  const handleAuth = async (e: FormEvent) => {
     e.preventDefault();
-    if (authKey) {
+    if (!authKey) return;
+
+    setSubmitting(true);
+    setError('');
+
+    try {
+      // Validate the admin secret with the server
+      const response = await fetch('/api/auth/validate-admin', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ secret: authKey }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok || !data.valid) {
+        throw new Error(data.error || 'Invalid admin secret');
+      }
+
+      // Only store and authenticate if validation succeeded
       localStorage.setItem('blog_admin_key', authKey);
       setIsAuthenticated(true);
       setShowAuthForm(false);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Authentication failed');
+      setAuthKey(''); // Clear the input
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -153,6 +205,13 @@ function NewBlogPostContent() {
         <div className="container max-w-md">
           <div className="card">
             <h1 className="text-3xl font-bold mb-6 text-center">Admin Access</h1>
+
+            {error && (
+              <div className="mb-4 p-4 bg-red-500/10 border border-red-500 rounded-lg text-red-500 text-sm">
+                {error}
+              </div>
+            )}
+
             <form onSubmit={handleAuth} className="space-y-4">
               <div>
                 <label htmlFor="authKey" className="block text-sm font-medium mb-2">
@@ -166,10 +225,15 @@ function NewBlogPostContent() {
                   className="input"
                   placeholder="Enter admin secret key"
                   required
+                  disabled={submitting}
                 />
               </div>
-              <button type="submit" className="btn-primary w-full">
-                Authenticate
+              <button
+                type="submit"
+                className="btn-primary w-full"
+                disabled={submitting}
+              >
+                {submitting ? 'Validating...' : 'Authenticate'}
               </button>
             </form>
             <p className="mt-4 text-sm text-[var(--color-text-secondary)] text-center">

@@ -18,21 +18,23 @@ interface Message {
 }
 
 interface ChatRoomProps {
-  channel: string;
+  channel?: string;
   title?: string;
   height?: string;
 }
 
-export default function ChatRoom({ channel, title, height = '600px' }: ChatRoomProps) {
+export default function ChatRoom({ channel = 'global', title = 'Chat', height }: ChatRoomProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [nickname, setNickname] = useState('');
   const [clientId, setClientId] = useState('');
   const [isSetup, setIsSetup] = useState(false);
+  const [guidelinesAccepted, setGuidelinesAccepted] = useState(false);
   const [messageInput, setMessageInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [sending, setSending] = useState(false);
   const [error, setError] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   // Initialize client ID and check for saved nickname
   useEffect(() => {
@@ -85,6 +87,14 @@ export default function ChatRoom({ channel, title, height = '600px' }: ChatRoomP
             setMessages(prev => {
               const exists = prev.some(msg => msg.id === newMessage.id);
               if (exists) return prev;
+
+              // Only auto-scroll if message is from someone else
+              if (newMessage.client_id !== clientId) {
+                setTimeout(() => {
+                  messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+                }, 100);
+              }
+
               return [...prev, newMessage];
             });
           }
@@ -102,12 +112,7 @@ export default function ChatRoom({ channel, title, height = '600px' }: ChatRoomP
         supabase.removeChannel(realtimeChannel);
       }
     };
-  }, [isSetup, channel]);
-
-  // Auto-scroll to bottom when new messages arrive
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
+  }, [isSetup, channel, clientId]);
 
   const loadHistory = async () => {
     setLoading(true);
@@ -132,7 +137,7 @@ export default function ChatRoom({ channel, title, height = '600px' }: ChatRoomP
 
   const handleSetupSubmit = (e: FormEvent) => {
     e.preventDefault();
-    if (nickname.trim().length >= 2 && nickname.trim().length <= 30) {
+    if (nickname.trim().length >= 2 && nickname.trim().length <= 30 && guidelinesAccepted) {
       localStorage.setItem('chat_nickname', nickname.trim());
       setNickname(nickname.trim());
       setIsSetup(true);
@@ -169,6 +174,9 @@ export default function ChatRoom({ channel, title, height = '600px' }: ChatRoomP
       // Add message to local state immediately (optimistic update)
       setMessages(prev => [...prev, data.data]);
       setMessageInput('');
+
+      // Keep focus on input after sending
+      inputRef.current?.focus();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to send message');
     } finally {
@@ -184,24 +192,50 @@ export default function ChatRoom({ channel, title, height = '600px' }: ChatRoomP
 
   if (!isSetup) {
     return (
-      <div className="card" style={{ minHeight: height }}>
-        <div className="flex flex-col items-center justify-center h-full py-12">
-          <h3 className="text-2xl font-bold mb-4">{title || 'Join Chat'}</h3>
-          <p className="text-[var(--color-text-secondary)] mb-6 text-center max-w-md">
+      <div className="flex flex-col items-center justify-center min-h-screen px-4" style={{ minHeight: height || 'calc(100vh - 200px)' }}>
+        <div className="w-full max-w-md">
+          <h3 className="text-2xl font-bold mb-4 text-center">{title || 'Join Chat'}</h3>
+          <p className="text-[var(--color-text-secondary)] mb-6 text-center">
             Choose a nickname to start chatting with others in real-time
           </p>
-          <form onSubmit={handleSetupSubmit} className="w-full max-w-sm space-y-4">
+          <form onSubmit={handleSetupSubmit} className="space-y-4">
             <input
               type="text"
               value={nickname}
               onChange={(e) => setNickname(e.target.value)}
               placeholder="Enter your nickname"
-              className="input"
+              className="input w-full"
               minLength={2}
               maxLength={30}
               required
             />
-            <button type="submit" className="btn-primary w-full">
+
+            {/* Community Guidelines */}
+            <div className="p-4 bg-[var(--color-surface-2)] rounded-lg">
+              <h4 className="font-semibold mb-2 text-sm">Community Guidelines</h4>
+              <ul className="text-xs text-[var(--color-text-secondary)] space-y-1 mb-3">
+                <li>• Be respectful and kind to others</li>
+                <li>• No spam, self-promotion, or offensive content</li>
+                <li>• Stay on topic and contribute meaningfully</li>
+                <li>• Help others learn and grow</li>
+              </ul>
+              <label className="flex items-start gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={guidelinesAccepted}
+                  onChange={(e) => setGuidelinesAccepted(e.target.checked)}
+                  className="mt-0.5"
+                  required
+                />
+                <span className="text-sm">I agree to follow the community guidelines</span>
+              </label>
+            </div>
+
+            <button
+              type="submit"
+              className="btn-primary w-full disabled:opacity-50 disabled:cursor-not-allowed"
+              disabled={!guidelinesAccepted}
+            >
               Join Chat
             </button>
           </form>
@@ -211,32 +245,16 @@ export default function ChatRoom({ channel, title, height = '600px' }: ChatRoomP
   }
 
   return (
-    <div className="card flex flex-col" style={{ height }}>
-      {/* Chat Header */}
-      <div className="pb-4 border-b border-[var(--color-border)] flex items-center justify-between">
-        <div>
-          <h3 className="font-bold text-lg">{title || 'Chat Room'}</h3>
-          <p className="text-sm text-[var(--color-text-secondary)]">
-            Chatting as <strong>{nickname}</strong>
-          </p>
-        </div>
-        <button
-          onClick={handleChangeNickname}
-          className="text-sm text-[var(--color-accent-1)] hover:underline"
-        >
-          Change Nickname
-        </button>
-      </div>
-
+    <div className="flex flex-col" style={{ height: height || 'calc(100vh - 180px)' }}>
       {/* Messages Area */}
-      <div className="flex-1 overflow-y-auto py-4 space-y-3">
+      <div className="flex-1 overflow-y-auto px-4 py-4 space-y-2">
         {loading ? (
           <div className="text-center py-8 text-[var(--color-text-secondary)]">
             Loading messages...
           </div>
         ) : messages.length === 0 ? (
           <div className="text-center py-8 text-[var(--color-text-secondary)]">
-            No messages yet. Be the first to say hello! 👋
+            No messages yet. Be the first to say hello!
           </div>
         ) : (
           messages.map((msg) => (
@@ -251,9 +269,6 @@ export default function ChatRoom({ channel, title, height = '600px' }: ChatRoomP
                     : 'bg-[var(--color-surface-2)]'
                 }`}
               >
-                <div className="text-xs font-semibold mb-1 opacity-75">
-                  {msg.nickname}
-                </div>
                 <div className="text-sm break-words">{msg.content}</div>
                 <div className="text-xs opacity-60 mt-1">
                   {new Date(msg.created_at).toLocaleTimeString([], {
@@ -270,15 +285,16 @@ export default function ChatRoom({ channel, title, height = '600px' }: ChatRoomP
 
       {/* Error Message */}
       {error && (
-        <div className="py-2 px-3 bg-red-500/10 border border-red-500 rounded text-red-500 text-sm">
+        <div className="mx-4 mb-2 py-2 px-3 bg-red-500/10 border border-red-500 rounded text-red-500 text-sm">
           {error}
         </div>
       )}
 
       {/* Message Input */}
-      <div className="pt-4 border-t border-[var(--color-border)]">
+      <div className="px-4 py-4 bg-[var(--color-surface-1)] border-t border-[var(--color-border)]">
         <form onSubmit={handleSendMessage} className="flex gap-2">
           <input
+            ref={inputRef}
             type="text"
             value={messageInput}
             onChange={(e) => setMessageInput(e.target.value)}
@@ -286,6 +302,7 @@ export default function ChatRoom({ channel, title, height = '600px' }: ChatRoomP
             className="input flex-1"
             maxLength={2000}
             disabled={sending}
+            autoFocus
           />
           <button
             type="submit"
@@ -295,9 +312,17 @@ export default function ChatRoom({ channel, title, height = '600px' }: ChatRoomP
             {sending ? 'Sending...' : 'Send'}
           </button>
         </form>
-        <p className="text-xs text-[var(--color-text-secondary)] mt-2">
-          {messageInput.length}/2000 characters
-        </p>
+        <div className="flex items-center justify-between mt-2">
+          <p className="text-xs text-[var(--color-text-secondary)]">
+            {messageInput.length}/2000 characters
+          </p>
+          <button
+            onClick={handleChangeNickname}
+            className="text-xs text-[var(--color-accent-1)] hover:underline"
+          >
+            Change Nickname ({nickname})
+          </button>
+        </div>
       </div>
     </div>
   );

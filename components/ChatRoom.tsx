@@ -57,35 +57,41 @@ export default function ChatRoom({ channel, title, height = '600px' }: ChatRoomP
     }
   }, [isSetup, channel]);
 
-  // Subscribe to realtime broadcasts for new messages
+  // Subscribe to realtime database changes for new messages
   useEffect(() => {
     if (!isSetup) return;
 
     let realtimeChannel: RealtimeChannel;
 
     const setupRealtime = async () => {
-      // Subscribe to room:{channel}:messages broadcast topic
-      realtimeChannel = supabase.channel(`room:${channel}:messages`, {
-        config: { private: true }
-      });
+      // Subscribe to postgres changes on chat_messages table
+      realtimeChannel = supabase
+        .channel(`room:${channel}:messages`)
+        .on(
+          'postgres_changes',
+          {
+            event: 'INSERT',
+            schema: 'public',
+            table: 'chat_messages',
+            filter: `channel=eq.${channel}`,
+          },
+          (payload) => {
+            console.log('Received realtime message:', payload);
 
-      // Listen for INSERT events (new messages)
-      realtimeChannel.on('broadcast', { event: 'INSERT' }, ({ payload }: { payload: Message }) => {
-        // Payload contains the NEW row from the trigger
-        console.log('Received broadcast message:', payload);
+            // payload.new contains the new row data
+            const newMessage = payload.new as Message;
 
-        // Add message to state if it doesn't already exist (deduplication)
-        setMessages(prev => {
-          const exists = prev.some(msg => msg.id === payload.id);
-          if (exists) return prev;
-          return [...prev, payload];
+            // Add message to state if it doesn't already exist (deduplication)
+            setMessages(prev => {
+              const exists = prev.some(msg => msg.id === newMessage.id);
+              if (exists) return prev;
+              return [...prev, newMessage];
+            });
+          }
+        )
+        .subscribe((status) => {
+          console.log(`Realtime subscription status for ${channel}:`, status);
         });
-      });
-
-      // Subscribe to the channel
-      realtimeChannel.subscribe((status) => {
-        console.log(`Realtime subscription status for ${channel}:`, status);
-      });
     };
 
     setupRealtime();
@@ -93,7 +99,7 @@ export default function ChatRoom({ channel, title, height = '600px' }: ChatRoomP
     // Cleanup: unsubscribe when component unmounts or channel changes
     return () => {
       if (realtimeChannel) {
-        realtimeChannel.unsubscribe();
+        supabase.removeChannel(realtimeChannel);
       }
     };
   }, [isSetup, channel]);

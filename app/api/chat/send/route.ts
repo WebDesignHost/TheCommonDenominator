@@ -121,16 +121,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // TODO: Add Pusher trigger in step 4 for real-time updates
-    // try {
-    //   await pusherServer.trigger(
-    //     `chat-${channel}`,
-    //     'new-message',
-    //     data
-    //   );
-    // } catch (pusherError) {
-    //   console.error('Pusher error:', pusherError);
-    // }
+    // Realtime broadcasting is handled automatically by the database trigger
+    // The chat_messages_broadcast_trigger broadcasts to 'room:{channel}:messages'
+    // No need to manually trigger events here
 
     return NextResponse.json({
       message: 'Message sent successfully',

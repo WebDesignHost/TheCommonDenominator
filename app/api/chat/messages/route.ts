@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabase, supabaseAdmin } from '@/lib/supabase';
-import { pusherServer } from '@/lib/pusher';
 
 export const runtime = 'nodejs';
 
@@ -78,17 +77,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
-    // Trigger Pusher event for real-time updates
-    try {
-      await pusherServer.trigger(
-        `chat-${finalChannel}`,
-        'new-message',
-        data
-      );
-    } catch (pusherError) {
-      console.error('Pusher error:', pusherError);
-      // Continue even if Pusher fails
-    }
+    // Realtime broadcasting is handled automatically by the database trigger
+    // No need to manually trigger events - the chat_messages_broadcast_trigger does it
 
     return NextResponse.json({ message: data }, { status: 201 });
   } catch (error) {

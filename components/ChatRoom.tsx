@@ -1,6 +1,8 @@
 'use client';
 
 import { useState, useEffect, useRef, FormEvent } from 'react';
+import { supabase } from '@/lib/supabase';
+import type { RealtimeChannel } from '@supabase/supabase-js';
 
 interface Message {
   id: string;
@@ -53,6 +55,47 @@ export default function ChatRoom({ channel, title, height = '600px' }: ChatRoomP
     if (isSetup) {
       loadHistory();
     }
+  }, [isSetup, channel]);
+
+  // Subscribe to realtime broadcasts for new messages
+  useEffect(() => {
+    if (!isSetup) return;
+
+    let realtimeChannel: RealtimeChannel;
+
+    const setupRealtime = async () => {
+      // Subscribe to room:{channel}:messages broadcast topic
+      realtimeChannel = supabase.channel(`room:${channel}:messages`, {
+        config: { private: true }
+      });
+
+      // Listen for INSERT events (new messages)
+      realtimeChannel.on('broadcast', { event: 'INSERT' }, ({ payload }: { payload: Message }) => {
+        // Payload contains the NEW row from the trigger
+        console.log('Received broadcast message:', payload);
+
+        // Add message to state if it doesn't already exist (deduplication)
+        setMessages(prev => {
+          const exists = prev.some(msg => msg.id === payload.id);
+          if (exists) return prev;
+          return [...prev, payload];
+        });
+      });
+
+      // Subscribe to the channel
+      realtimeChannel.subscribe((status) => {
+        console.log(`Realtime subscription status for ${channel}:`, status);
+      });
+    };
+
+    setupRealtime();
+
+    // Cleanup: unsubscribe when component unmounts or channel changes
+    return () => {
+      if (realtimeChannel) {
+        realtimeChannel.unsubscribe();
+      }
+    };
   }, [isSetup, channel]);
 
   // Auto-scroll to bottom when new messages arrive

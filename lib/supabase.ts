@@ -41,10 +41,15 @@ export interface BlogPost {
 
 export interface ChatMessage {
   id: string;
-  channel_id: string;
-  author_name: string;
+  channel: string;
+  post_id?: string;
+  nickname: string;
   content: string;
+  client_id: string;
+  ip_hash?: string;
   created_at: string;
+  is_deleted?: boolean;
+  flagged?: boolean;
 }
 
 export interface OnlineUser {

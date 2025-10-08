@@ -4,11 +4,15 @@ import { useState, useEffect, useRef, FormEvent } from 'react';
 
 interface Message {
   id: string;
-  channel_id: string;
-  author_name: string;
+  channel: string;
+  post_id?: string;
+  nickname: string;
   content: string;
+  client_id: string;
+  ip_hash?: string;
   created_at: string;
-  client_id?: string;
+  is_deleted?: boolean;
+  flagged?: boolean;
 }
 
 interface ChatRoomProps {
@@ -199,7 +203,7 @@ export default function ChatRoom({ channel, title, height = '600px' }: ChatRoomP
                 }`}
               >
                 <div className="text-xs font-semibold mb-1 opacity-75">
-                  {msg.author_name}
+                  {msg.nickname}
                 </div>
                 <div className="text-sm break-words">{msg.content}</div>
                 <div className="text-xs opacity-60 mt-1">

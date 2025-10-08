@@ -8,13 +8,14 @@ export const runtime = 'nodejs';
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    const channel_id = searchParams.get('channel_id') || 'general';
+    const channel = searchParams.get('channel_id') || searchParams.get('channel') || 'general';
     const limit = parseInt(searchParams.get('limit') || '50');
 
     const { data, error } = await supabase
       .from('chat_messages')
       .select('*')
-      .eq('channel_id', channel_id)
+      .eq('channel', channel)
+      .eq('is_deleted', false)
       .order('created_at', { ascending: false })
       .limit(limit);
 
@@ -38,12 +39,23 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { channel_id, author_name, content } = body;
+    const { channel_id, channel, author_name, nickname, content, client_id } = body;
+
+    // Support both old and new field names
+    const finalChannel = channel || channel_id || 'general';
+    const finalNickname = nickname || author_name;
 
     // Validate required fields
-    if (!author_name || !content) {
+    if (!finalNickname || !content) {
       return NextResponse.json(
-        { error: 'Missing required fields' },
+        { error: 'Missing required fields: nickname and content are required' },
+        { status: 400 }
+      );
+    }
+
+    if (!client_id) {
+      return NextResponse.json(
+        { error: 'Missing client_id' },
         { status: 400 }
       );
     }
@@ -53,9 +65,10 @@ export async function POST(request: NextRequest) {
       .from('chat_messages')
       .insert([
         {
-          channel_id: channel_id || 'general',
-          author_name,
+          channel: finalChannel,
+          nickname: finalNickname,
           content,
+          client_id,
         },
       ])
       .select()
@@ -68,7 +81,7 @@ export async function POST(request: NextRequest) {
     // Trigger Pusher event for real-time updates
     try {
       await pusherServer.trigger(
-        `chat-${channel_id || 'general'}`,
+        `chat-${finalChannel}`,
         'new-message',
         data
       );

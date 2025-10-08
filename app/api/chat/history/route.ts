@@ -15,7 +15,8 @@ export async function GET(request: NextRequest) {
     let query = supabase
       .from('chat_messages')
       .select('*')
-      .eq('channel_id', channel)
+      .eq('channel', channel)
+      .eq('is_deleted', false) // Don't show deleted messages
       .order('created_at', { ascending: false })
       .limit(limit);
 
@@ -46,7 +47,8 @@ export async function GET(request: NextRequest) {
     const { count } = await supabase
       .from('chat_messages')
       .select('*', { count: 'exact', head: true })
-      .eq('channel_id', channel);
+      .eq('channel', channel)
+      .eq('is_deleted', false);
 
     return NextResponse.json({
       messages,

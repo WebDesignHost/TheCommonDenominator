@@ -63,7 +63,7 @@ function moderateContent(content: string): { approved: boolean; reason?: string 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { channel, nickname, content, client_id } = body;
+    const { channel, nickname, content, client_id, post_id } = body;
 
     // Validate required fields
     if (!channel || !nickname || !content || !client_id) {
@@ -103,10 +103,11 @@ export async function POST(request: NextRequest) {
       .from('chat_messages')
       .insert([
         {
-          channel_id: channel,
-          author_name: nickname,
+          channel,
+          nickname,
           content: content.trim(),
           client_id,
+          post_id: post_id || null,
         },
       ])
       .select()

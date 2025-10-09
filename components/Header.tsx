@@ -30,6 +30,13 @@ export default function Header() {
     return pathname.startsWith(href);
   };
 
+  const handleLinkClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
+    // Prevent scroll to top when clicking on the current page
+    if (pathname === href) {
+      e.preventDefault();
+    }
+  };
+
   return (
     <header 
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-200 ${
@@ -49,6 +56,7 @@ export default function Header() {
               <Link
                 key={link.href}
                 href={link.href}
+                onClick={(e) => handleLinkClick(e, link.href)}
                 className={`relative font-medium transition-colors ${
                   isActive(link.href)
                     ? 'text-[var(--color-accent-1)]'
@@ -64,7 +72,11 @@ export default function Header() {
           </nav>
 
           {/* CTA Button */}
-          <Link href="/chat" className="hidden md:inline-flex btn-primary">
+          <Link
+            href="/chat"
+            onClick={(e) => handleLinkClick(e, '/chat')}
+            className="hidden md:inline-flex btn-primary"
+          >
             Join the Chat
           </Link>
 
@@ -100,7 +112,10 @@ export default function Header() {
                 <Link
                   key={link.href}
                   href={link.href}
-                  onClick={() => setIsMobileMenuOpen(false)}
+                  onClick={(e) => {
+                    handleLinkClick(e, link.href);
+                    setIsMobileMenuOpen(false);
+                  }}
                   className={`py-2 font-medium transition-colors ${
                     isActive(link.href)
                       ? 'text-[var(--color-accent-1)]'
@@ -112,7 +127,10 @@ export default function Header() {
               ))}
               <Link
                 href="/chat"
-                onClick={() => setIsMobileMenuOpen(false)}
+                onClick={(e) => {
+                  handleLinkClick(e, '/chat');
+                  setIsMobileMenuOpen(false);
+                }}
                 className="btn-primary text-center mt-2"
               >
                 Join the Chat

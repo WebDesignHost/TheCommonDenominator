@@ -1,6 +1,21 @@
 import Link from 'next/link';
 
-async function getPosts() {
+interface BlogPost {
+  id: string;
+  title: string;
+  excerpt: string;
+  content: string;
+  tags: string[];
+  read_time: number;
+  publish_date: string;
+  cover_image_url?: string;
+  status: string;
+  author_name: string;
+  created_at: string;
+  updated_at: string;
+}
+
+async function getPosts(): Promise<BlogPost[]> {
   try {
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
     const response = await fetch(`${baseUrl}/api/blog`, {

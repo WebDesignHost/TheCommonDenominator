@@ -78,10 +78,10 @@ export default function Footer() {
             <h3 className="text-sm font-semibold mb-4 uppercase tracking-wide">Connect</h3>
             <p className="text-[var(--color-text-secondary)] text-sm mb-4">
               <a
-                href="mailto:hello@thecommondenominator.com"
+                href="mailto:contact@thecommondenominator.blog"
                 className="hover:text-[var(--color-accent-1)] transition-colors"
               >
-                hello@thecommondenominator.com
+                contact@thecommondenominator.blog
               </a>
             </p>
             <div className="flex gap-4">

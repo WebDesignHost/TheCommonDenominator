@@ -119,11 +119,11 @@ export default function Privacy() {
             <p className="leading-relaxed">
               If you have questions about this privacy policy or our data practices, please 
               contact us at{' '}
-              <a 
-                href="mailto:hello@weeklyblog.com" 
+              <a
+                href="mailto:hello@thecommondenominator.com"
                 className="text-[var(--color-accent-1)] hover:text-[var(--color-accent-2)] transition-colors"
               >
-                hello@weeklyblog.com
+                hello@thecommondenominator.com
               </a>
             </p>
           </section>

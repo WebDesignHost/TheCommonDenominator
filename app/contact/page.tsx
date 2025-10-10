@@ -35,18 +35,50 @@ export default function Contact() {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (validateForm()) {
-      console.log('Form submitted:', formData);
+
+    if (!validateForm()) {
+      return;
+    }
+
+    try {
+      const response = await fetch('/api/contact', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
+
+      let data;
+      const contentType = response.headers.get('content-type');
+
+      if (contentType && contentType.includes('application/json')) {
+        data = await response.json();
+      } else {
+        // Server returned HTML error page
+        const text = await response.text();
+        console.error('Server error:', text);
+        throw new Error('Server error. Please try again later.');
+      }
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to send message');
+      }
+
       setSubmitted(true);
-      
+
       // Reset form after 3 seconds
       setTimeout(() => {
         setFormData({ name: '', email: '', message: '', wantReply: false });
         setSubmitted(false);
       }, 3000);
+    } catch (err) {
+      console.error('Contact form error:', err);
+      setErrors({
+        message: err instanceof Error ? err.message : 'Failed to send message. Please try again.',
+      });
     }
   };
 
@@ -74,9 +106,9 @@ export default function Contact() {
       <div className="container max-w-2xl">
         {/* Header */}
         <div className="text-center mb-12">
-          <h1 className="text-4xl md:text-5xl font-bold mb-4">Say hi.</h1>
+          <h1 className="text-4xl md:text-5xl font-bold mb-4">Let's Chat</h1>
           <p className="text-xl text-[var(--color-text-secondary)]">
-            Questions, ideas, or feedback—drop a note.
+            Got questions about math? Want to share an idea? Just want to say hi? We're all ears!
           </p>
         </div>
 
@@ -89,9 +121,9 @@ export default function Contact() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                 </svg>
               </div>
-              <h2 className="text-2xl font-bold mb-2">Thanks—message received.</h2>
+              <h2 className="text-2xl font-bold mb-2">Got it! Thanks!</h2>
               <p className="text-[var(--color-text-secondary)]">
-                {formData.wantReply ? "I'll get back to you soon." : "I appreciate you reaching out."}
+                {formData.wantReply ? "We'll get back to you soon!" : "Thanks for reaching out—we appreciate you!"}
               </p>
             </div>
           ) : (
@@ -179,13 +211,13 @@ export default function Contact() {
         {/* Direct Contact */}
         <div className="mt-8 text-center">
           <p className="text-[var(--color-text-secondary)] mb-2">
-            Or reach out directly
+            Prefer email? No problem!
           </p>
           <a
-            href="mailto:hello@weeklyblog.com"
+            href="mailto:hello@thecommondenominator.com"
             className="text-[var(--color-accent-1)] hover:text-[var(--color-accent-2)] font-medium transition-colors"
           >
-            hello@weeklyblog.com
+            hello@thecommondenominator.com
           </a>
         </div>
       </div>

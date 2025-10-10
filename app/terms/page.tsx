@@ -87,11 +87,11 @@ export default function Terms() {
             </h2>
             <p className="leading-relaxed">
               If you have questions about these terms, please contact us at{' '}
-              <a 
-                href="mailto:hello@weeklyblog.com" 
+              <a
+                href="mailto:hello@thecommondenominator.com"
                 className="text-[var(--color-accent-1)] hover:text-[var(--color-accent-2)] transition-colors"
               >
-                hello@weeklyblog.com
+                hello@thecommondenominator.com
               </a>
             </p>
           </section>

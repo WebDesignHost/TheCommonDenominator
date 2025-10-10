@@ -1,23 +1,23 @@
 import type { Metadata } from "next";
-import { Inter, Plus_Jakarta_Sans } from "next/font/google";
+import { Quicksand, Nunito } from "next/font/google";
 import "./globals.css";
 import Header from "@/components/Header";
 import ConditionalFooter from "@/components/ConditionalFooter";
 
-const inter = Inter({
+const nunito = Nunito({
   subsets: ["latin"],
   variable: "--font-body",
   display: "swap"
 });
-const plusJakartaSans = Plus_Jakarta_Sans({
+const quicksand = Quicksand({
   subsets: ["latin"],
   variable: "--font-heading",
   display: "swap"
 });
 
 export const metadata: Metadata = {
-  title: "Weekly Blog - Building in Public",
-  description: "Follow the weekly drops, lessons learned, and real numbers.",
+  title: "The Common Denominator - Math Made Fun & Accessible",
+  description: "Where numbers meet real life. Making mathematical concepts fun and accessible through connections to all areas of life and the world.",
 };
 
 export default function RootLayout({
@@ -26,7 +26,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${inter.variable} ${plusJakartaSans.variable}`}>
+    <html lang="en" className={`${nunito.variable} ${quicksand.variable}`}>
       <body>
         <Header />
         <main>{children}</main>

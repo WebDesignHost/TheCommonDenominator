@@ -207,9 +207,9 @@ export default function ChatRoom({ channel = 'global', title = 'Chat', height }:
     return (
       <div className="min-h-[calc(100vh-80px)] flex flex-col items-center justify-center px-4">
         <div className="w-full max-w-md">
-          <h3 className="text-2xl font-bold mb-4 text-center">{title || 'Join Chat'}</h3>
+          <h3 className="text-2xl font-bold mb-4 text-center">{title || 'Join the Chat'}</h3>
           <p className="text-[var(--color-text-secondary)] mb-6 text-center">
-            Choose a nickname to start chatting with others in real-time
+            Pick a nickname and join the conversation! Let's talk math and life.
           </p>
           <form onSubmit={handleSetupSubmit} className="space-y-4">
             <input
@@ -226,12 +226,12 @@ export default function ChatRoom({ channel = 'global', title = 'Chat', height }:
 
             {/* Community Guidelines */}
             <div className="p-4 bg-[var(--color-surface-2)] rounded-lg">
-              <h4 className="font-semibold mb-2 text-sm">Community Guidelines</h4>
+              <h4 className="font-semibold mb-2 text-sm">Quick Guidelines</h4>
               <ul className="text-xs text-[var(--color-text-secondary)] space-y-1 mb-3">
-                <li>• Be respectful and kind to others</li>
-                <li>• No spam, self-promotion, or offensive content</li>
-                <li>• Stay on topic and contribute meaningfully</li>
-                <li>• Help others learn and grow</li>
+                <li>• Be kind and respectful—we're all learning!</li>
+                <li>• Keep it relevant (math, life, and connections)</li>
+                <li>• No spam or self-promotion, please</li>
+                <li>• Have fun and share those "aha!" moments</li>
               </ul>
               <label className="flex items-start gap-2 cursor-pointer">
                 <input
@@ -241,7 +241,7 @@ export default function ChatRoom({ channel = 'global', title = 'Chat', height }:
                   className="mt-0.5"
                   required
                 />
-                <span className="text-sm">I agree to follow the community guidelines</span>
+                <span className="text-sm">I'll be kind and keep it cool</span>
               </label>
             </div>
 
@@ -293,7 +293,7 @@ export default function ChatRoom({ channel = 'global', title = 'Chat', height }:
                   <div
                     className={`max-w-[75%] sm:max-w-[60%] rounded-2xl px-4 py-2.5 ${
                       isOwn
-                        ? 'bg-[var(--color-accent-1)] text-white'
+                        ? 'bg-[var(--color-accent-1)] text-black'
                         : 'bg-[var(--color-surface-2)]'
                     }`}
                   >

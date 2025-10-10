@@ -46,8 +46,9 @@ export default function Header() {
       <div className="container">
         <div className="flex items-center justify-between">
           {/* Logo */}
-          <Link href="/" className="text-2xl font-bold tracking-tight">
-            <span className="text-gradient">WB</span>
+          <Link href="/" className="text-2xl font-bold tracking-tight flex items-center gap-2">
+            <span className="text-gradient text-3xl">÷</span>
+            <span className="hidden sm:inline text-gradient">TCD</span>
           </Link>
 
           {/* Desktop Navigation */}
@@ -77,7 +78,7 @@ export default function Header() {
             onClick={(e) => handleLinkClick(e, '/chat')}
             className="hidden md:inline-flex btn-primary"
           >
-            Join the Chat
+            Chat with Us
           </Link>
 
           {/* Mobile Menu Button */}
@@ -133,7 +134,7 @@ export default function Header() {
                 }}
                 className="btn-primary text-center mt-2"
               >
-                Join the Chat
+                Chat with Us
               </Link>
             </nav>
           </div>

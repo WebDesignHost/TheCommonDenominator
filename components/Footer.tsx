@@ -48,11 +48,12 @@ export default function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
           {/* Left: Wordmark */}
           <div>
-            <Link href="/" className="text-2xl font-bold tracking-tight inline-block mb-2">
-              <span className="text-gradient">Weekly Blog</span>
+            <Link href="/" className="text-2xl font-bold tracking-tight inline-block mb-2 flex items-center gap-2">
+              <span className="text-gradient text-3xl">÷</span>
+              <span className="text-gradient">The Common Denominator</span>
             </Link>
             <p className="text-[var(--color-text-secondary)] text-sm">
-              Building in public, one week at a time.
+              Where numbers meet real life.
             </p>
           </div>
 
@@ -76,11 +77,11 @@ export default function Footer() {
           <div>
             <h3 className="text-sm font-semibold mb-4 uppercase tracking-wide">Connect</h3>
             <p className="text-[var(--color-text-secondary)] text-sm mb-4">
-              <a 
-                href="mailto:hello@weeklyblog.com" 
+              <a
+                href="mailto:hello@thecommondenominator.com"
                 className="hover:text-[var(--color-accent-1)] transition-colors"
               >
-                hello@weeklyblog.com
+                hello@thecommondenominator.com
               </a>
             </p>
             <div className="flex gap-4">
@@ -103,7 +104,7 @@ export default function Footer() {
         {/* Bottom Row */}
         <div className="pt-8 border-t border-[var(--color-border)]">
           <p className="text-[var(--color-text-secondary)] text-sm opacity-70 text-center">
-            © {currentYear} Weekly Blog. All rights reserved.
+            © {currentYear} The Common Denominator. All rights reserved.
           </p>
         </div>
       </div>

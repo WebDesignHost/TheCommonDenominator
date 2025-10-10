@@ -274,12 +274,12 @@ export default function BlogPost({ params }: { params: Promise<{ id: string }> }
           <div className="card mb-8">
             <div className="flex items-start gap-4">
               <div className="w-16 h-16 bg-gradient-to-br from-[var(--color-accent-1)] to-[var(--color-accent-2)] rounded-full flex items-center justify-center text-2xl font-bold">
-                WB
+                ÷
               </div>
               <div>
-                <h3 className="font-bold text-lg mb-2">Weekly Blog Author</h3>
+                <h3 className="font-bold text-lg mb-2">The Common Denominator</h3>
                 <p className="text-[var(--color-text-secondary)] text-sm">
-                  Building in public and sharing transparent weekly updates. Follow along for real metrics, honest lessons, and actionable insights.
+                  Making math fun and accessible for everyone. We believe math is everywhere—you just need to know where to look!
                 </p>
               </div>
             </div>
@@ -293,12 +293,12 @@ export default function BlogPost({ params }: { params: Promise<{ id: string }> }
             <div className="flex gap-4 flex-1">
               {prevPost && (
                 <Link href={`/blog/${prevPost.id}`} className="btn-secondary flex-1 text-center">
-                  ← Previous Week
+                  ← Previous Post
                 </Link>
               )}
               {nextPost && (
                 <Link href={`/blog/${nextPost.id}`} className="btn-secondary flex-1 text-center">
-                  Next Week →
+                  Next Post →
                 </Link>
               )}
             </div>

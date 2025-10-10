@@ -95,8 +95,8 @@ export default function BlogIndex() {
       <div className="container">
         {/* Header */}
         <div className="mb-12 text-center">
-          <h1 className="text-4xl md:text-5xl font-bold mb-4">Weekly Blog</h1>
-          <p className="text-xl text-[var(--color-text-secondary)]">New every week.</p>
+          <h1 className="text-4xl md:text-5xl font-bold mb-4">Math Blog</h1>
+          <p className="text-xl text-[var(--color-text-secondary)]">Where numbers meet life.</p>
         </div>
 
         {/* Loading State */}
@@ -123,7 +123,7 @@ export default function BlogIndex() {
           <div className="flex-1">
             <input
               type="text"
-              placeholder="Search weeks, topics..."
+              placeholder="Search topics, keywords..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="input"
@@ -246,14 +246,14 @@ export default function BlogIndex() {
           <div className="card bg-[var(--color-surface-2)]">
             <h3 className="text-lg font-bold mb-2">Join the Discussion</h3>
             <p className="text-[var(--color-text-secondary)] mb-4 text-sm">
-              Chat with other readers and share your thoughts in real-time.
+              Chat with fellow math enthusiasts and share your "aha!" moments.
             </p>
             <div className="flex items-center gap-2 mb-4 text-sm">
               <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-              <span className="text-[var(--color-text-secondary)]">1,234 members online</span>
+              <span className="text-[var(--color-text-secondary)]">Live chat available</span>
             </div>
             <Link href="/chat" className="btn-primary w-full text-center">
-              Enter Chat Room
+              Join the Chat
             </Link>
           </div>
         </aside>

@@ -214,10 +214,10 @@ export default function Contact() {
             Prefer email? No problem!
           </p>
           <a
-            href="mailto:hello@thecommondenominator.com"
+            href="mailto:contact@thecommondenominator.blog"
             className="text-[var(--color-accent-1)] hover:text-[var(--color-accent-2)] font-medium transition-colors"
           >
-            hello@thecommondenominator.com
+            contact@thecommondenominator.blog
           </a>
         </div>
       </div>

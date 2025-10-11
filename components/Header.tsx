@@ -46,8 +46,8 @@ export default function Header() {
         <div className="flex items-center justify-between">
           {/* Logo */}
           <Link href="/" className="text-2xl font-bold tracking-tight flex items-center gap-2">
-            <span className="text-gradient text-3xl">÷</span>
-            <span className="hidden sm:inline text-gradient">TCD</span>
+            
+            <span className="hidden sm:inline text-gradient">The Common Denominator</span>
           </Link>
 
           {/* Desktop Navigation */}

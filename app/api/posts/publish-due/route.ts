@@ -4,6 +4,17 @@ import { revalidatePath } from 'next/cache';
 
 export const runtime = 'nodejs';
 
+interface DuePost {
+  id: string;
+  title: string;
+  publish_at: string;
+}
+
+interface PublishedPost {
+  id: string;
+  title: string;
+}
+
 // POST /api/posts/publish-due - Publish all scheduled posts that are due
 export async function POST(request: NextRequest) {
   try {
@@ -34,7 +45,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Update all due posts to published status
-    const postIds = duePosts.map(post => post.id);
+    const postIds = (duePosts as DuePost[]).map((post: DuePost) => post.id);
 
     const { data: updatedPosts, error: updateError } = await supabaseAdmin
       .from('posts')
@@ -58,8 +69,9 @@ export async function POST(request: NextRequest) {
     revalidatePath('/blog');
 
     // Revalidate each individual post page
-    if (updatedPosts) {
-      for (const post of updatedPosts) {
+    const publishedPosts = updatedPosts as PublishedPost[] | null;
+    if (publishedPosts) {
+      for (const post of publishedPosts) {
         revalidatePath(`/blog/${post.id}`);
       }
     }
@@ -67,11 +79,11 @@ export async function POST(request: NextRequest) {
     // Also revalidate the home page which might show recent posts
     revalidatePath('/');
 
-    console.log(`Published ${updatedPosts?.length || 0} posts:`, updatedPosts?.map(p => p.id));
+    console.log(`Published ${publishedPosts?.length || 0} posts:`, publishedPosts?.map((p: PublishedPost) => p.id));
 
     return NextResponse.json({
-      message: `Successfully published ${updatedPosts?.length || 0} post(s)`,
-      published: updatedPosts || []
+      message: `Successfully published ${publishedPosts?.length || 0} post(s)`,
+      published: publishedPosts || []
     });
 
   } catch (error) {

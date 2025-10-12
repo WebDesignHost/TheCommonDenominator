@@ -36,10 +36,18 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Validate scheduling
-    if (status === 'scheduled' && !publish_at) {
+    // Validate published posts have publish_at
+    if (status === 'published' && !publish_at) {
       return NextResponse.json(
-        { error: 'publish_at is required for scheduled posts' },
+        { error: 'publish_at is required for published posts' },
+        { status: 400 }
+      );
+    }
+
+    // Validate status is either 'draft' or 'published'
+    if (status !== 'draft' && status !== 'published') {
+      return NextResponse.json(
+        { error: 'status must be either "draft" or "published"' },
         { status: 400 }
       );
     }
@@ -66,19 +74,27 @@ export async function POST(request: NextRequest) {
     // Calculate read time
     const read_time = calculateReadTime(content);
 
-    // Determine publish_at and published_at based on status
+    // Determine publish_at and published_at based on backend logic
+    // - Draft: both null (not visible)
+    // - Publish now: both set to now (immediately visible via RLS)
+    // - Schedule: publish_at=future, published_at=null (RLS makes visible when time passes)
     let publishAtTime = null;
     let publishedAtTime = null;
 
     if (status === 'published') {
-      // Immediate publish - set both to now
-      const now = new Date().toISOString();
-      publishAtTime = now;
-      publishedAtTime = now;
-    } else if (status === 'scheduled') {
-      // Scheduled - set publish_at to scheduled time, published_at stays null until actually published
       publishAtTime = publish_at;
-      publishedAtTime = null;
+
+      // Only set published_at if publish_at is in the past (immediate publish)
+      const publishDate = new Date(publish_at);
+      const now = new Date();
+
+      if (publishDate <= now) {
+        // Immediate publish - visible now
+        publishedAtTime = now.toISOString();
+      } else {
+        // Scheduled for future - RLS policy will make it visible when publish_at passes
+        publishedAtTime = null;
+      }
     }
     // For drafts, both remain null
 

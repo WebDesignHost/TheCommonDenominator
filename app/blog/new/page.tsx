@@ -151,18 +151,22 @@ function NewBlogPostContent() {
         }
       }
 
-      // Calculate publish_at if scheduling
+      // Calculate publish_at and status based on new backend logic
+      // Draft: status='draft', publish_at=null
+      // Publish now: status='published', publish_at=now
+      // Schedule: status='published', publish_at=future timestamp
       let publishAt: string | undefined;
       let status = 'draft';
 
       if (publishOption === 'schedule') {
         const dateTime = new Date(`${scheduledDate}T${scheduledTime}`);
         publishAt = dateTime.toISOString();
-        status = 'scheduled';
+        status = 'published'; // Changed: scheduled posts are now 'published' with future publish_at
       } else if (publishOption === 'publish') {
         status = 'published';
         publishAt = new Date().toISOString();
       }
+      // For drafts: status='draft', publish_at stays undefined
 
       // Create the post
       const createResponse = await fetch('/api/posts/new', {

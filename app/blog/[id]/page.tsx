@@ -138,8 +138,8 @@ export default function BlogPost({ params }: { params: Promise<{ id: string }> }
 
         {/* Header */}
         <header className="mb-12">
-          {/* Scheduled Status Badge */}
-          {post.status === 'scheduled' && post.publish_at && (
+          {/* Scheduled Status Badge (future publish_at) */}
+          {post.status === 'published' && post.publish_at && new Date(post.publish_at) > new Date() && (
             <div className="mb-4 inline-block px-4 py-2 bg-[var(--color-accent-2)]/20 border border-[var(--color-accent-2)] rounded-full text-sm font-medium">
               Scheduled for {new Date(post.publish_at).toLocaleString('en-US', {
                 month: 'long',

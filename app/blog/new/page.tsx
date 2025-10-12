@@ -18,7 +18,9 @@ function NewBlogPostContent() {
   const [tags, setTags] = useState('');
   const [coverImageUrl, setCoverImageUrl] = useState('');
   const [authorName, setAuthorName] = useState('');
-  const [publishNow, setPublishNow] = useState(false);
+  const [publishOption, setPublishOption] = useState<'draft' | 'publish' | 'schedule'>('draft');
+  const [scheduledDate, setScheduledDate] = useState('');
+  const [scheduledTime, setScheduledTime] = useState('');
 
   const [uploading, setUploading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -142,6 +144,26 @@ function NewBlogPostContent() {
     setSuccess('');
 
     try {
+      // Validate scheduling if needed
+      if (publishOption === 'schedule') {
+        if (!scheduledDate || !scheduledTime) {
+          throw new Error('Please select a date and time for scheduling');
+        }
+      }
+
+      // Calculate publish_at if scheduling
+      let publishAt: string | undefined;
+      let status = 'draft';
+
+      if (publishOption === 'schedule') {
+        const dateTime = new Date(`${scheduledDate}T${scheduledTime}`);
+        publishAt = dateTime.toISOString();
+        status = 'scheduled';
+      } else if (publishOption === 'publish') {
+        status = 'published';
+        publishAt = new Date().toISOString();
+      }
+
       // Create the post
       const createResponse = await fetch('/api/posts/new', {
         method: 'POST',
@@ -155,7 +177,8 @@ function NewBlogPostContent() {
           tags: tags.split(',').map(t => t.trim()).filter(Boolean),
           cover_image_url: coverImageUrl || undefined,
           author_name: authorName || 'Anonymous',
-          status: publishNow ? 'published' : 'draft',
+          status,
+          publish_at: publishAt,
         }),
       });
 
@@ -167,27 +190,16 @@ function NewBlogPostContent() {
 
       const postId = createData.post.id;
 
-      // If publish now is checked, publish the post
-      if (publishNow) {
-        const publishResponse = await fetch('/api/posts/publish', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'x-admin-secret': authKey,
-          },
-          body: JSON.stringify({ id: postId }),
-        });
-
-        const publishData = await publishResponse.json();
-
-        if (!publishResponse.ok) {
-          throw new Error(publishData.error || 'Failed to publish post');
-        }
+      let successMessage = 'Post saved as draft successfully!';
+      if (publishOption === 'publish') {
+        successMessage = 'Post published successfully!';
+      } else if (publishOption === 'schedule') {
+        successMessage = `Post scheduled for ${new Date(publishAt!).toLocaleString()}!`;
       }
 
-      setSuccess(`Post ${publishNow ? 'published' : 'created as draft'} successfully!`);
+      setSuccess(successMessage);
 
-      // Reset form
+      // Reset form and redirect
       setTimeout(() => {
         router.push(`/blog/${postId}`);
       }, 2000);
@@ -379,22 +391,96 @@ function NewBlogPostContent() {
             </p>
           </div>
 
-          {/* Publish Toggle */}
+          {/* Publish Options */}
           <div className="card">
-            <label className="flex items-center gap-3 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={publishNow}
-                onChange={(e) => setPublishNow(e.target.checked)}
-                className="w-5 h-5 rounded border-[var(--color-border)] bg-[var(--color-surface-2)] checked:bg-[var(--color-accent-1)] cursor-pointer"
-              />
-              <span className="font-medium">Publish immediately</span>
+            <label className="block text-sm font-medium mb-3">
+              Publishing Options
             </label>
-            <p className="mt-2 text-sm text-[var(--color-text-secondary)]">
-              {publishNow
-                ? 'Post will be published and visible to everyone immediately'
-                : 'Post will be saved as a draft'}
-            </p>
+
+            <div className="space-y-3">
+              {/* Draft Option */}
+              <label className="flex items-start gap-3 cursor-pointer">
+                <input
+                  type="radio"
+                  name="publishOption"
+                  value="draft"
+                  checked={publishOption === 'draft'}
+                  onChange={(e) => setPublishOption(e.target.value as 'draft' | 'publish' | 'schedule')}
+                  className="mt-0.5 w-4 h-4"
+                />
+                <div>
+                  <span className="font-medium">Save as Draft</span>
+                  <p className="text-sm text-[var(--color-text-secondary)]">
+                    Save for later without publishing
+                  </p>
+                </div>
+              </label>
+
+              {/* Publish Now Option */}
+              <label className="flex items-start gap-3 cursor-pointer">
+                <input
+                  type="radio"
+                  name="publishOption"
+                  value="publish"
+                  checked={publishOption === 'publish'}
+                  onChange={(e) => setPublishOption(e.target.value as 'draft' | 'publish' | 'schedule')}
+                  className="mt-0.5 w-4 h-4"
+                />
+                <div>
+                  <span className="font-medium">Publish Immediately</span>
+                  <p className="text-sm text-[var(--color-text-secondary)]">
+                    Make visible to everyone right away
+                  </p>
+                </div>
+              </label>
+
+              {/* Schedule Option */}
+              <label className="flex items-start gap-3 cursor-pointer">
+                <input
+                  type="radio"
+                  name="publishOption"
+                  value="schedule"
+                  checked={publishOption === 'schedule'}
+                  onChange={(e) => setPublishOption(e.target.value as 'draft' | 'publish' | 'schedule')}
+                  className="mt-0.5 w-4 h-4"
+                />
+                <div className="flex-1">
+                  <span className="font-medium">Schedule for Later</span>
+                  <p className="text-sm text-[var(--color-text-secondary)] mb-3">
+                    Choose a specific date and time to publish
+                  </p>
+
+                  {publishOption === 'schedule' && (
+                    <div className="grid grid-cols-2 gap-3 mt-2">
+                      <div>
+                        <label htmlFor="scheduledDate" className="block text-xs font-medium mb-1">
+                          Date
+                        </label>
+                        <input
+                          type="date"
+                          id="scheduledDate"
+                          value={scheduledDate}
+                          onChange={(e) => setScheduledDate(e.target.value)}
+                          className="input text-sm"
+                        />
+                      </div>
+                      <div>
+                        <label htmlFor="scheduledTime" className="block text-xs font-medium mb-1">
+                          Time (UTC)
+                        </label>
+                        <input
+                          type="time"
+                          id="scheduledTime"
+                          value={scheduledTime}
+                          onChange={(e) => setScheduledTime(e.target.value)}
+                          className="input text-sm"
+                        />
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </label>
+            </div>
           </div>
 
           {/* Submit Button */}
@@ -404,7 +490,10 @@ function NewBlogPostContent() {
               disabled={submitting || uploading}
               className="btn-primary flex-1"
             >
-              {submitting ? 'Creating...' : publishNow ? 'Create & Publish' : 'Save as Draft'}
+              {submitting ? 'Creating...' :
+               publishOption === 'publish' ? 'Create & Publish' :
+               publishOption === 'schedule' ? 'Schedule Post' :
+               'Save as Draft'}
             </button>
             <button
               type="button"

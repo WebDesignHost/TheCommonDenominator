@@ -26,12 +26,20 @@ function calculateReadTime(content: string): number {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { title, excerpt, content, tags, cover_image_url, status, author_name } = body;
+    const { title, excerpt, content, tags, cover_image_url, status, author_name, publish_at } = body;
 
     // Validate required fields
     if (!title || !excerpt || !content) {
       return NextResponse.json(
         { error: 'Missing required fields: title, excerpt, and content are required' },
+        { status: 400 }
+      );
+    }
+
+    // Validate scheduling
+    if (status === 'scheduled' && !publish_at) {
+      return NextResponse.json(
+        { error: 'publish_at is required for scheduled posts' },
         { status: 400 }
       );
     }
@@ -58,6 +66,22 @@ export async function POST(request: NextRequest) {
     // Calculate read time
     const read_time = calculateReadTime(content);
 
+    // Determine publish_at and published_at based on status
+    let publishAtTime = null;
+    let publishedAtTime = null;
+
+    if (status === 'published') {
+      // Immediate publish - set both to now
+      const now = new Date().toISOString();
+      publishAtTime = now;
+      publishedAtTime = now;
+    } else if (status === 'scheduled') {
+      // Scheduled - set publish_at to scheduled time, published_at stays null until actually published
+      publishAtTime = publish_at;
+      publishedAtTime = null;
+    }
+    // For drafts, both remain null
+
     // Prepare post data
     const postData = {
       id,
@@ -69,7 +93,9 @@ export async function POST(request: NextRequest) {
       cover_image_url: cover_image_url || null,
       status: status || 'draft',
       author_name: author_name || 'Anonymous',
-      publish_date: status === 'published' ? new Date().toISOString() : null,
+      publish_at: publishAtTime,
+      published_at: publishedAtTime,
+      publish_date: status === 'published' ? new Date().toISOString() : null, // Legacy field
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     };

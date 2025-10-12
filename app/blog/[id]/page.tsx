@@ -19,6 +19,8 @@ interface BlogPost {
   author_name: string;
   created_at: string;
   updated_at: string;
+  publish_at?: string;
+  published_at?: string;
 }
 
 export default function BlogPost({ params }: { params: Promise<{ id: string }> }) {
@@ -136,6 +138,20 @@ export default function BlogPost({ params }: { params: Promise<{ id: string }> }
 
         {/* Header */}
         <header className="mb-12">
+          {/* Scheduled Status Badge */}
+          {post.status === 'scheduled' && post.publish_at && (
+            <div className="mb-4 inline-block px-4 py-2 bg-[var(--color-accent-2)]/20 border border-[var(--color-accent-2)] rounded-full text-sm font-medium">
+              Scheduled for {new Date(post.publish_at).toLocaleString('en-US', {
+                month: 'long',
+                day: 'numeric',
+                year: 'numeric',
+                hour: 'numeric',
+                minute: '2-digit',
+                timeZoneName: 'short'
+              })}
+            </div>
+          )}
+
           <h1 className="text-4xl md:text-5xl font-bold mb-6 leading-tight">
             {post.title}
           </h1>

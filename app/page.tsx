@@ -13,6 +13,8 @@ interface BlogPost {
   author_name: string;
   created_at: string;
   updated_at: string;
+  publish_at?: string;
+  published_at?: string;
 }
 
 async function getPosts(): Promise<BlogPost[]> {

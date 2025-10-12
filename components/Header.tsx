@@ -20,6 +20,7 @@ export default function Header() {
 
   const navLinks = [
     { href: '/blog', label: 'Blog' },
+    { href: '/chat', label: 'Chat' },
     { href: '/', label: 'About' },
     { href: '/contact', label: 'Contact' },
   ];
@@ -46,7 +47,6 @@ export default function Header() {
         <div className="flex items-center justify-between">
           {/* Logo */}
           <Link href="/" className="text-2xl font-bold tracking-tight flex items-center gap-2">
-            
             <span className="hidden sm:inline text-gradient">The Common Denominator</span>
           </Link>
 
@@ -71,14 +71,7 @@ export default function Header() {
             ))}
           </nav>
 
-          {/* CTA Button */}
-          <Link
-            href="/chat"
-            onClick={(e) => handleLinkClick(e, '/chat')}
-            className="hidden md:inline-flex btn-primary"
-          >
-            Chat with Us
-          </Link>
+          
 
           {/* Mobile Menu Button */}
           <button

@@ -17,6 +17,8 @@ interface BlogPost {
   author_name: string;
   created_at: string;
   updated_at: string;
+  publish_at?: string;
+  published_at?: string;
 }
 
 export default function BlogIndex() {
@@ -168,6 +170,21 @@ export default function BlogIndex() {
                         />
                       </div>
                     )}
+
+                    {/* Status Badge for Scheduled Posts */}
+                    {post.status === 'scheduled' && post.publish_at && (
+                      <div className="mb-2 inline-block px-3 py-1 bg-[var(--color-accent-2)]/20 border border-[var(--color-accent-2)] rounded-full text-xs font-medium">
+                        Scheduled for {new Date(post.publish_at).toLocaleString('en-US', {
+                          month: 'short',
+                          day: 'numeric',
+                          year: 'numeric',
+                          hour: 'numeric',
+                          minute: '2-digit',
+                          timeZoneName: 'short'
+                        })}
+                      </div>
+                    )}
+
                     <h3 className="text-xl font-bold mb-3 group-hover:text-[var(--color-accent-1)] transition-colors">
                       {post.title}
                     </h3>

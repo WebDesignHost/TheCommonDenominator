@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { supabase } from '@/lib/supabase';
 
 interface BlogPost {
   id: string;
@@ -22,19 +23,27 @@ interface BlogPost {
 
 async function getPosts(): Promise<BlogPost[]> {
   try {
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
-    const response = await fetch(`${baseUrl}/api/blog`, {
-      cache: 'no-store',
-      next: { revalidate: 0 }
-    });
-    if (!response.ok) return [];
-    const data = await response.json();
-    return data.posts || [];
+    // Direct Supabase query - no need to fetch from API route
+    const { data, error } = await supabase
+      .from('posts')
+      .select('*')
+      .eq('status', 'published')
+      .order('publish_date', { ascending: false });
+
+    if (error) {
+      console.error('Error fetching posts:', error);
+      return [];
+    }
+
+    return data || [];
   } catch (error) {
     console.error('Error fetching posts:', error);
     return [];
   }
 }
+
+// Enable static generation with revalidation every 60 seconds (ISR)
+export const revalidate = 60;
 
 export default async function Home() {
   const allPosts = await getPosts();

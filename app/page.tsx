@@ -126,33 +126,39 @@ export default async function Home() {
         </section>
       )}
 
-      {/* What You'll Find */}
-      <section className="section bg-[#A084E8]">
-        <div className="container">
-          <div className="card max-w-3xl mx-auto">
-            <h2 className="text-2xl font-bold mb-6 text-center">What You'll Find Here</h2>
-            <ul className="space-y-4">
-              {[
-                'Math concepts explained without the headache',
-                'Real-world examples from everyday situations',
-                'Visual breakdowns that actually make sense',
-                'Fun facts and surprising connections',
-                'No prerequisites—just curiosity'
-              ].map((item, index) => (
-                <li key={index} className="flex items-start gap-3">
-                  <svg className="w-6 h-6 text-[var(--color-accent-2)] flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
-                  <span className="text-[var(--color-text-secondary)]">{item}</span>
-                </li>
-              ))}
-            </ul>
+      {/* About Us */}
+      <section className="relative py-24 bg-gradient-to-b from-[#A084E8] via-[#9575de] to-[#8c66d4] overflow-hidden">
+        {/* Decorative elements */}
+        <div className="absolute inset-0 opacity-10">
+          <div className="absolute top-20 left-10 w-72 h-72 bg-white rounded-full blur-3xl"></div>
+          <div className="absolute bottom-20 right-10 w-96 h-96 bg-purple-300 rounded-full blur-3xl"></div>
+        </div>
+        
+        <div className="container relative z-10">
+          <div className="max-w-5xl mx-auto">
+            <h2 className="text-5xl md:text-6xl font-bold mb-12 leading-tight">
+              <span className="block text-white/90 mb-2">About Us</span>
+            </h2>
+            
+            <div className="space-y-8">
+              <p className="text-2xl md:text-3xl font-semibold text-white leading-relaxed">
+                We're <span className="text-gradient bg-clip-text text-transparent bg-gradient-to-r from-yellow-200 to-pink-200">Adam and Aidan</span>, and this is the Common Denominator, where <span className="italic">numbers meet narratives</span> and <span className="italic">logic explains life</span>.
+              </p>
+              
+              <p className="text-xl md:text-2xl text-white/90 leading-relaxed max-w-4xl">
+                Our goal is to explore the unexpected and surprising connections between different branches of math and the world around us, while also keeping it as down to earth and reader friendly as possible.
+              </p>
+              
+              <p className="text-xl md:text-2xl text-white/80 leading-relaxed max-w-4xl pt-4">
+                We hope that this mathematical journey will help you view math in a different light, and if you learn even one new thing every week, then our mission will be a success.
+              </p>
+            </div>
           </div>
         </div>
       </section>
       
       {/* Community CTA */}
-        <section className="bg-gradient-to-b from-[#A084E8] to-purple-600 py-16">
+        <section className="bg-gradient-to-b from-[#8c66d4] to-purple-600 py-16">
         <div className="container">
           <div className="relative overflow-hidden rounded-2xl p-12 text-center border-gradient">
             <div className="absolute inset-0 bg-gradient-to-r from-[var(--color-accent-2)] to-[var(--color-accent-1)] opacity-10"></div>

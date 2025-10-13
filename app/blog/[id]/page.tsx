@@ -3,7 +3,8 @@
 import { use, useState, useEffect } from 'react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import ChatRoom from '@/components/ChatRoom';
+import PostInteractions from '@/components/PostInteractions';
+import PostComments from '@/components/PostComments';
 import { parseTags } from '@/lib/utils';
 
 interface BlogPost {
@@ -21,11 +22,26 @@ interface BlogPost {
   updated_at: string;
   publish_at?: string;
   published_at?: string;
+  comments_count: number;
+  likes_count: number;
+  shares_count: number;
+}
+
+interface Comment {
+  id: string;
+  post_id: string;
+  parent_id: string | null;
+  nickname: string | null;
+  content: string;
+  client_id: string;
+  created_at: string;
+  is_deleted: boolean;
 }
 
 export default function BlogPost({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const [post, setPost] = useState<BlogPost | null>(null);
+  const [comments, setComments] = useState<Comment[]>([]);
   const [relatedPosts, setRelatedPosts] = useState<BlogPost[]>([]);
   const [allPosts, setAllPosts] = useState<BlogPost[]>([]);
   const [loading, setLoading] = useState(true);
@@ -47,6 +63,13 @@ export default function BlogPost({ params }: { params: Promise<{ id: string }> }
         }
 
         setPost(postData.post);
+
+        // Fetch comments for this post
+        const commentsResponse = await fetch(`/api/posts/${id}/comments`);
+        const commentsData = await commentsResponse.json();
+        if (commentsResponse.ok) {
+          setComments(commentsData.comments || []);
+        }
 
         // Fetch all posts for navigation and related posts
         const allResponse = await fetch('/api/blog');
@@ -172,6 +195,16 @@ export default function BlogPost({ params }: { params: Promise<{ id: string }> }
           </div>
         </header>
 
+        {/* Post Interactions */}
+        <div className="mb-8">
+          <PostInteractions
+            postId={post.id}
+            initialLikesCount={post.likes_count}
+            initialCommentsCount={post.comments_count}
+            initialSharesCount={post.shares_count}
+          />
+        </div>
+
         {/* Table of Contents - Mobile Toggle */}
         <div className="lg:hidden mb-8">
           <button
@@ -271,17 +304,9 @@ export default function BlogPost({ params }: { params: Promise<{ id: string }> }
           </article>
         </div>
 
-        {/* Post Discussion Chat */}
-        <div className="mt-16">
-          <h2 className="text-2xl font-bold mb-6">Discussion</h2>
-          <p className="text-[var(--color-text-secondary)] mb-6">
-            Join the conversation about this post. Share your thoughts, ask questions, and connect with other readers.
-          </p>
-          <ChatRoom
-            channel={`post:${post.id}`}
-            title={`Chat about "${post.title}"`}
-            height="600px"
-          />
+        {/* Post Comments */}
+        <div data-comments-section>
+          <PostComments postId={post.id} initialComments={comments} />
         </div>
 
         {/* Post Footer */}

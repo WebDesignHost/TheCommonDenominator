@@ -3,6 +3,8 @@ import { Quicksand, Nunito } from "next/font/google";
 import "./globals.css";
 import Header from "@/components/Header";
 import ConditionalFooter from "@/components/ConditionalFooter";
+import InspectorClient from "@/components/InspectorClient";
+
 
 const nunito = Nunito({
   subsets: ["latin"],
@@ -28,6 +30,7 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${nunito.variable} ${quicksand.variable}`}>
       <body>
+      <InspectorClient />
         <Header />
         <main>{children}</main>
         <ConditionalFooter />

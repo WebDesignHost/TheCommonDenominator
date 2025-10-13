@@ -43,13 +43,12 @@ export default function Footer() {
   ];
 
   return (
-    <footer className="border-t border-[var(--color-border)] mt-16">
+    <footer className="border-t border-[var(--color-border)]  bg-purple-600">
       <div className="container py-12">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
           {/* Left: Wordmark */}
           <div>
             <Link href="/" className="text-2xl font-bold tracking-tight inline-block mb-2 flex items-center gap-2">
-              <span className="text-gradient text-3xl">÷</span>
               <span className="text-gradient">The Common Denominator</span>
             </Link>
             <p className="text-[var(--color-text-secondary)] text-sm">

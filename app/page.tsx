@@ -15,6 +15,9 @@ interface BlogPost {
   updated_at: string;
   publish_at?: string;
   published_at?: string;
+  comments_count: number;
+  likes_count: number;
+  shares_count: number;
 }
 
 async function getPosts(): Promise<BlogPost[]> {
@@ -53,7 +56,7 @@ export default async function Home() {
               </p>
               <div className="flex flex-col sm:flex-row gap-4">
                 {latestPost && (
-                  <Link href={`/blog/${latestPost.id}`} className="btn-primary">
+                  <Link href={`/blog/${latestPost.id}`} className="btn-secondary">
                     Read Latest Post
                   </Link>
                 )}
@@ -80,45 +83,11 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* About Section */}
-      <section className="section">
-        <div className="container">
-          <div className="card max-w-4xl mx-auto">
-            <div className="text-center mb-8">
-              <h2 className="text-3xl font-bold mb-4">Math + Life = ∞ Connections</h2>
-              <p className="text-xl text-[var(--color-text-secondary)] leading-relaxed">
-                Ever wondered how math shows up in your daily life? We make those connections clear, interesting, and dare we say... fun?
-              </p>
-            </div>
-            <div className="grid md:grid-cols-3 gap-6 mt-8">
-              <div className="text-center p-6 bg-[var(--color-surface-2)] rounded-lg">
-                <h3 className="font-bold mb-2 text-lg">Real-World Math</h3>
-                <p className="text-sm text-[var(--color-text-secondary)]">
-                  From recipes to road trips, we show how math is everywhere
-                </p>
-              </div>
-              <div className="text-center p-6 bg-[var(--color-surface-2)] rounded-lg">
-                <h3 className="font-bold mb-2 text-lg">Clear Explanations</h3>
-                <p className="text-sm text-[var(--color-text-secondary)]">
-                  No confusing jargon—just straightforward, friendly breakdowns
-                </p>
-              </div>
-              <div className="text-center p-6 bg-[var(--color-surface-2)] rounded-lg">
-                <h3 className="font-bold mb-2 text-lg">Actually Fun</h3>
-                <p className="text-sm text-[var(--color-text-secondary)]">
-                  Math doesn't have to be boring. We promise it can be cool
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
       {/* Featured Posts */}
       {featuredPosts.length > 0 && (
-        <section className="section">
+        <section className="bg-gradient-to-b from-[#8c2de1] to-[#A084E8] py-16">
           <div className="container">
-            <h2 className="text-3xl font-bold mb-8 text-center">Recent Posts</h2>
+            <h2 className="text-5xl font-bold mb-8 text-center">Recent Posts</h2>
             <div className="grid md:grid-cols-3 gap-6">
               {featuredPosts.map((post) => (
                 <Link key={post.id} href={`/blog/${post.id}`} className="card group">
@@ -149,7 +118,7 @@ export default async function Home() {
       )}
 
       {/* What You'll Find */}
-      <section className="section">
+      <section className="section bg-[#A084E8]">
         <div className="container">
           <div className="card max-w-3xl mx-auto">
             <h2 className="text-2xl font-bold mb-6 text-center">What You'll Find Here</h2>
@@ -172,12 +141,12 @@ export default async function Home() {
           </div>
         </div>
       </section>
-
+      
       {/* Community CTA */}
-      <section className="section">
+        <section className="bg-gradient-to-b from-[#A084E8] to-purple-600 py-16">
         <div className="container">
           <div className="relative overflow-hidden rounded-2xl p-12 text-center border-gradient">
-            <div className="absolute inset-0 bg-gradient-to-r from-[var(--color-accent-1)] to-[var(--color-accent-2)] opacity-10"></div>
+            <div className="absolute inset-0 bg-gradient-to-r from-[var(--color-accent-2)] to-[var(--color-accent-1)] opacity-10"></div>
             <div className="relative z-10">
               <h2 className="text-3xl font-bold mb-4">Got Questions? Let's Talk!</h2>
               <p className="text-xl text-[var(--color-text-secondary)] mb-8 max-w-2xl mx-auto">

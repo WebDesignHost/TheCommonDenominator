@@ -112,6 +112,9 @@ export async function POST(request: NextRequest) {
       publish_at: publishAtTime,
       published_at: publishedAtTime,
       publish_date: status === 'published' ? new Date().toISOString() : null, // Legacy field
+      comments_count: 0,
+      likes_count: 0,
+      shares_count: 0,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     };

@@ -4,6 +4,40 @@ import { createClient } from '@/utils/supabase/server';
 
 export const runtime = 'nodejs';
 
+// GET /api/posts/[id]/comments - Fetch comments for a post
+export async function GET(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { id: postId } = await params;
+
+    // Fetch comments ordered by created_at
+    const { data: comments, error } = await supabaseAdmin
+      .from('post_comments')
+      .select('*')
+      .eq('post_id', postId)
+      .eq('is_deleted', false)
+      .order('created_at', { ascending: true });
+
+    if (error) {
+      console.error('Error fetching comments:', error);
+      return NextResponse.json(
+        { error: `Failed to fetch comments: ${error.message}` },
+        { status: 500 }
+      );
+    }
+
+    return NextResponse.json({ comments: comments || [] });
+  } catch (error) {
+    console.error('Fetch comments error:', error);
+    return NextResponse.json(
+      { error: 'Failed to fetch comments' },
+      { status: 500 }
+    );
+  }
+}
+
 // POST /api/posts/[id]/comments - Add a new comment
 export async function POST(
   request: NextRequest,

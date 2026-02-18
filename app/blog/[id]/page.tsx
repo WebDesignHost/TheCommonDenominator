@@ -67,24 +67,31 @@ export default function BlogPost({ params }: { params: Promise<{ id: string }> }
         setPost(postData.post);
 
         // Fetch comments for this post
-        const commentsResponse = await fetch(`/api/posts/${id}/comments`);
-        const commentsData = await commentsResponse.json();
-        if (commentsResponse.ok) {
-          setComments(commentsData.comments || []);
+        try {
+          const commentsResponse = await fetch(`/api/posts/${id}/comments`);
+          if (commentsResponse.ok) {
+            const commentsData = await commentsResponse.json();
+            setComments(commentsData.comments || []);
+          }
+        } catch (err) {
+          console.error('Error fetching comments:', err);
         }
 
         // Fetch all posts for navigation and related posts
-        const allResponse = await fetch('/api/blog');
-        const allData = await allResponse.json();
+        try {
+          const allResponse = await fetch('/api/blog');
+          if (allResponse.ok) {
+            const allData = await allResponse.json();
+            setAllPosts(allData.posts || []);
 
-        if (allResponse.ok) {
-          setAllPosts(allData.posts || []);
-
-          // Get related posts (posts with similar tags, excluding current)
-          const related = (allData.posts || [])
-            .filter((p: BlogPost) => p.id !== id)
-            .slice(0, 3);
-          setRelatedPosts(related);
+            // Get related posts (posts with similar tags, excluding current)
+            const related = (allData.posts || [])
+              .filter((p: BlogPost) => p.id !== id)
+              .slice(0, 3);
+            setRelatedPosts(related);
+          }
+        } catch (err) {
+          console.error('Error fetching all posts:', err);
         }
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to fetch blog post');

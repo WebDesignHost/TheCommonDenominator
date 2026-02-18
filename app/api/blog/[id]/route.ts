@@ -48,21 +48,28 @@ export async function PUT(
       }
     }
 
-    // Use service role for write operations
+    // Prepare the update object
+    const updateData: any = {
+      title,
+      excerpt,
+      content,
+      tags: typeof tags === 'string' ? tags : JSON.stringify(tags || []),
+      read_time,
+      status,
+      author_name,
+      publish_at: publish_at || null,
+      updated_at: new Date().toISOString(),
+    };
+
+    // Handle both naming possibilities for the cover image
+    if (cover_image_url !== undefined) {
+      updateData.cover_image_url = cover_image_url;
+      updateData.cover_image = cover_image_url;
+    }
+
     const { data, error } = await supabaseAdmin
       .from('posts')
-      .update({
-        title,
-        excerpt,
-        content,
-        tags: typeof tags === 'string' ? tags : JSON.stringify(tags || []), // Store as JSON string
-        read_time,
-        cover_image_url,
-        status,
-        author_name,
-        publish_at: publish_at || null,
-        updated_at: new Date().toISOString(),
-      })
+      .update(updateData)
       .eq('id', id)
       .select()
       .single();

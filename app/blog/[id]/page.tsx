@@ -142,10 +142,10 @@ export default function BlogPost({ params }: { params: Promise<{ id: string }> }
         </nav>
 
         {/* Cover Image */}
-        {post.cover_image_url && (
+        {(post.cover_image_url || (post as any).cover_image) && (
           <div className="mb-8 -mx-4 md:mx-0 rounded-lg overflow-hidden">
             <img
-              src={post.cover_image_url}
+              src={post.cover_image_url || (post as any).cover_image}
               alt={post.title}
               className="w-full h-auto max-h-[500px] object-cover"
             />

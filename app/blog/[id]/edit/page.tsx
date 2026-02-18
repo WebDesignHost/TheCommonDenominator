@@ -89,12 +89,12 @@ function EditBlogPostContent({ postId }: { postId: string }) {
         const data = await response.json();
         if (!response.ok) throw new Error(data.error || 'Failed to fetch post');
 
-        const p: BlogPost = data.post;
+        const p: any = data.post;
         setPost(p);
         setTitle(p.title || '');
         setExcerpt(p.excerpt || '');
         setContent(p.content || '');
-        setCoverImageUrl(p.cover_image_url || '');
+        setCoverImageUrl(p.cover_image_url || p.cover_image || '');
         setAuthorName(p.author_name || '');
 
         // Parse tags

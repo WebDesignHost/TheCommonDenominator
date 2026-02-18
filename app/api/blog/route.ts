@@ -55,21 +55,26 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Use service role for write operations
+    // Prepare the insert object
+    const insertData: any = {
+      title,
+      excerpt,
+      content,
+      tags: JSON.stringify(tags || []),
+      read_time: read_time || 5,
+      status: status || 'draft',
+      author_name: author_name || 'Anonymous',
+    };
+
+    // Handle both naming possibilities for the cover image
+    if (cover_image_url) {
+      insertData.cover_image_url = cover_image_url;
+      insertData.cover_image = cover_image_url;
+    }
+
     const { data, error } = await supabaseAdmin
       .from('posts')
-      .insert([
-        {
-          title,
-          excerpt,
-          content,
-          tags: JSON.stringify(tags || []), // Store as JSON string for text column
-          read_time: read_time || 5,
-          cover_image_url: cover_image_url || null,
-          status: status || 'draft',
-          author_name: author_name || 'Anonymous',
-        },
-      ])
+      .insert([insertData])
       .select()
       .single();
 

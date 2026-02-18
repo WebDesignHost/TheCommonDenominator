@@ -32,6 +32,21 @@ export default function LoginPage() {
         </h1>
         
         <form action={handleSubmit} className="space-y-4">
+          {isSignUp && (
+            <div>
+              <label className="block text-sm font-medium mb-1 text-[var(--color-text-secondary)]">
+                Username
+              </label>
+              <input
+                name="username"
+                type="text"
+                required
+                className="w-full px-4 py-2 rounded-lg bg-[var(--color-bg)] border border-[var(--color-border)] focus:ring-2 focus:ring-[var(--color-accent-1)] outline-none"
+                placeholder="math_wizard"
+              />
+            </div>
+          )}
+          
           <div>
             <label className="block text-sm font-medium mb-1 text-[var(--color-text-secondary)]">
               Email Address

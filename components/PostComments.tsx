@@ -3,6 +3,8 @@
 import { useState, useEffect } from 'react';
 import { getClientId } from '@/lib/clientId';
 import { supabase } from '@/lib/supabase';
+import { createClient } from '@/utils/supabase/client';
+import Link from 'next/link';
 
 interface Comment {
   id: string;
@@ -27,8 +29,20 @@ export default function PostComments({ postId, initialComments }: PostCommentsPr
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [replyTo, setReplyTo] = useState<string | null>(null);
+  const [user, setUser] = useState<any>(null);
 
-  // Subscribe to realtime comment updates
+  const supabaseClient = createClient();
+
+  useEffect(() => {
+    async function getUser() {
+      const { data: { user } } = await supabaseClient.auth.getUser();
+      setUser(user);
+      if (user?.user_metadata?.username) {
+        setNickname(user.user_metadata.username);
+      }
+    }
+    getUser();
+  }, []);
   useEffect(() => {
     const channel = supabase
       .channel(`post_comments:${postId}`)
@@ -182,20 +196,30 @@ export default function PostComments({ postId, initialComments }: PostCommentsPr
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label htmlFor="nickname" className="block text-sm font-medium mb-2">
-              Name (optional)
-            </label>
-            <input
-              id="nickname"
-              type="text"
-              value={nickname}
-              onChange={(e) => setNickname(e.target.value)}
-              className="input"
-              placeholder="Your name"
-              maxLength={64}
-            />
-          </div>
+          {!user ? (
+            <div>
+              <label htmlFor="nickname" className="block text-sm font-medium mb-2">
+                Name (optional)
+              </label>
+              <input
+                id="nickname"
+                type="text"
+                value={nickname}
+                onChange={(e) => setNickname(e.target.value)}
+                className="input"
+                placeholder="Your name"
+                maxLength={64}
+              />
+              <p className="text-xs text-[var(--color-text-secondary)] mt-2">
+                <Link href="/login" className="text-[var(--color-accent-1)] hover:underline">Sign in</Link> to use a permanent username.
+              </p>
+            </div>
+          ) : (
+            <div className="flex items-center gap-2 mb-2">
+              <span className="text-sm font-medium text-[var(--color-text-secondary)]">Commenting as:</span>
+              <span className="text-sm font-bold text-[var(--color-accent-1)]">{user.user_metadata?.username}</span>
+            </div>
+          )}
 
           <div>
             <label htmlFor="content" className="block text-sm font-medium mb-2">

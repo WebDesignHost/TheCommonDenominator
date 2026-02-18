@@ -81,7 +81,7 @@ export default async function Home() {
   <div className="relative rounded-3xl p-[2px] bg-gradient-to-r from-[var(--color-accent-1)]
               to-[var(--color-accent-2)]">
     <div className="relative rounded-3xl overflow-hidden aspect-[16/9] md:aspect-[3/2]">
-      <img src="/hero.png" alt="Hero Visual"
+      <img src="/logo.jpg" alt="The Common Denominator Logo"
            className="absolute inset-0 w-full h-full object-cover" />
       <div className="pointer-events-none absolute inset-0 rounded-3xl ring-1 ring-white/10"></div>
     </div>

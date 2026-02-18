@@ -164,10 +164,10 @@ export default function BlogIndex() {
 
                 return (
                   <Link key={post.id} href={`/blog/${post.id}`} className="card group">
-                    {post.cover_image_url && (
+                    {(post.cover_image_url || (post as any).cover_image) && (
                       <div className="mb-4 -mx-6 -mt-6 h-48 overflow-hidden rounded-t-lg">
                         <img
-                          src={post.cover_image_url}
+                          src={post.cover_image_url || (post as any).cover_image}
                           alt={post.title}
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                         />

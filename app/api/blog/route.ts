@@ -66,10 +66,8 @@ export async function POST(request: NextRequest) {
       author_name: author_name || 'Anonymous',
     };
 
-    // Handle both naming possibilities for the cover image
     if (cover_image_url) {
       insertData.cover_image_url = cover_image_url;
-      insertData.cover_image = cover_image_url;
     }
 
     const { data, error } = await supabaseAdmin
@@ -77,6 +75,20 @@ export async function POST(request: NextRequest) {
       .insert([insertData])
       .select()
       .single();
+
+    if (error && error.message.includes('column "cover_image_url" does not exist')) {
+      delete insertData.cover_image_url;
+      insertData.cover_image = cover_image_url;
+      
+      const { data: retryData, error: retryError } = await supabaseAdmin
+        .from('posts')
+        .insert([insertData])
+        .select()
+        .single();
+        
+      if (retryError) return NextResponse.json({ error: retryError.message }, { status: 500 });
+      return NextResponse.json({ post: retryData }, { status: 201 });
+    }
 
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 500 });

@@ -61,10 +61,9 @@ export async function PUT(
       updated_at: new Date().toISOString(),
     };
 
-    // Handle both naming possibilities for the cover image
+    // Use the name the user confirmed is correct
     if (cover_image_url !== undefined) {
       updateData.cover_image_url = cover_image_url;
-      updateData.cover_image = cover_image_url;
     }
 
     const { data, error } = await supabaseAdmin
@@ -75,6 +74,29 @@ export async function PUT(
       .single();
 
     if (error) {
+      // Fallback: If cover_image_url failed, try cover_image
+      if (error.message.includes('column "cover_image_url" does not exist')) {
+        delete updateData.cover_image_url;
+        updateData.cover_image = cover_image_url;
+        
+        const { data: retryData, error: retryError } = await supabaseAdmin
+          .from('posts')
+          .update(updateData)
+          .eq('id', id)
+          .select()
+          .single();
+          
+        if (retryError) {
+          console.error('Supabase Retry Error:', retryError);
+          return NextResponse.json({ error: retryError.message }, { status: 500 });
+        }
+        
+        revalidatePath(`/blog/${id}`);
+        revalidatePath('/');
+        return NextResponse.json({ post: retryData });
+      }
+
+      console.error('Supabase Update Error:', error);
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabase, supabaseAdmin } from '@/lib/supabase';
 
-export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
 
 // GET /api/blog - Fetch all blog posts
 export async function GET(request: NextRequest) {

@@ -2,7 +2,15 @@ import { NextRequest, NextResponse } from 'next/server';
 import { supabase, supabaseAdmin } from '@/lib/supabase';
 import { revalidatePath } from 'next/cache';
 
-export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+
+// Helper function to calculate reading time
+function calculateReadTime(content: string): number {
+  const wordsPerMinute = 200;
+  const words = content.trim().split(/\s+/).length;
+  const minutes = Math.ceil(words / wordsPerMinute);
+  return Math.max(1, minutes);
+}
 
 // GET /api/blog/[id] - Fetch a single blog post
 export async function GET(
@@ -11,7 +19,8 @@ export async function GET(
 ) {
   try {
     const { id } = await params;
-    const { data, error } = await supabase
+    // Use admin client for GET to ensure we can see drafts in the editor
+    const { data, error } = await supabaseAdmin
       .from('posts')
       .select('*')
       .eq('id', id)
@@ -21,7 +30,9 @@ export async function GET(
       return NextResponse.json({ error: error.message }, { status: 404 });
     }
 
-    return NextResponse.json({ post: data });
+    const response = NextResponse.json({ post: data });
+    response.headers.set('Cache-Control', 'no-store, max-age=0');
+    return response;
   } catch (error) {
     return NextResponse.json(
       { error: 'Failed to fetch blog post' },
@@ -38,35 +49,43 @@ export async function PUT(
   try {
     const { id } = await params;
     const body = await request.json();
-    const { title, excerpt, content, tags, read_time, cover_image_url, status, author_name, publish_at, secret } = body;
+    const { title, excerpt, content, tags, cover_image_url, status, author_name, publish_at, secret } = body;
 
-    // Validate admin secret if provided
-    if (secret) {
-      const adminSecret = process.env.BLOG_ADMIN_SECRET;
-      if (secret !== adminSecret) {
-        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-      }
+    // Validate admin secret
+    const adminSecret = process.env.BLOG_ADMIN_SECRET;
+    if (secret !== adminSecret) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Prepare the update object - only use columns that definitely exist
+    // Prepare clean update data
     const updateData: any = {
-      title,
-      excerpt,
-      content,
-      tags: typeof tags === 'string' ? tags : JSON.stringify(tags || []),
-      read_time,
-      status,
-      author_name,
-      publish_at: publish_at || null,
-      updated_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
     };
 
-    // Use the verified column name
+    if (title !== undefined) updateData.title = title;
+    if (excerpt !== undefined) updateData.excerpt = excerpt;
+    if (content !== undefined) {
+      updateData.content = content;
+      updateData.read_time = calculateReadTime(content);
+    }
+    if (tags !== undefined) {
+      updateData.tags = typeof tags === 'string' ? tags : JSON.stringify(tags || []);
+    }
+    if (status !== undefined) updateData.status = status;
+    if (author_name !== undefined) updateData.author_name = author_name;
+    if (publish_at !== undefined) updateData.publish_at = publish_at;
+    
+    // Sync legacy publish_date for sorting
+    if (status === 'published') {
+      updateData.publish_date = publish_at || new Date().toISOString();
+    }
+
+    // Verified column name
     if (cover_image_url !== undefined) {
       updateData.cover_image_url = cover_image_url;
     }
 
-    console.log(`Updating post ${id} with:`, updateData);
+    console.log(`Updating post ${id}:`, Object.keys(updateData));
 
     const { data, error } = await supabaseAdmin
       .from('posts')
@@ -77,29 +96,22 @@ export async function PUT(
 
     if (error) {
       console.error('Supabase Update Error:', error);
-      return NextResponse.json({ 
-        error: error.message,
-        details: error.details 
-      }, { status: 500 });
+      return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
-    if (!data) {
-      return NextResponse.json({ error: 'Post not found' }, { status: 404 });
-    }
-
-    // Clear cache for everything related to this post
+    // Force revalidation across the site
     revalidatePath(`/blog/${id}`);
     revalidatePath(`/blog/${id}/edit`);
     revalidatePath('/blog');
     revalidatePath('/');
-    revalidatePath('/api/blog/[id]', 'page');
 
     return NextResponse.json({ 
       success: true, 
       post: data,
-      revalidated: new Date().toISOString()
+      message: 'Updated and revalidated'
     });
   } catch (error) {
+    console.error('Update route error:', error);
     return NextResponse.json(
       { error: 'Failed to update blog post' },
       { status: 500 }

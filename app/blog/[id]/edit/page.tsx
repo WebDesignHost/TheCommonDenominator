@@ -166,12 +166,17 @@ function EditBlogPostContent({ postId }: { postId: string }) {
       formData.append('file', file);
       const response = await fetch('/api/posts/upload-image', { method: 'POST', body: formData });
       const data = await response.json();
-      if (!response.ok) throw new Error(data.error || 'Failed to upload image');
+      
+      if (!response.ok) {
+        throw new Error(data.error || `Upload failed (${response.status})`);
+      }
+      
       setCoverImageUrl(data.url);
       setSuccess('Image uploaded successfully!');
       setTimeout(() => setSuccess(''), 3000);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to upload image');
+      console.error('Upload error:', err);
+      setError(err instanceof Error ? err.message : 'Failed to upload image. Check file size (max 4.5MB).');
     } finally {
       setUploading(false);
     }

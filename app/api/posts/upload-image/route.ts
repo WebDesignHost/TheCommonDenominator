@@ -34,9 +34,13 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Generate unique filename
+    // Generate unique filename with better sanitization
     const timestamp = Date.now();
-    const sanitizedName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
+    // Keep only alphanumeric and dots/hyphens
+    const sanitizedName = file.name
+      .toLowerCase()
+      .replace(/[^a-z0-9.]/g, '-') 
+      .replace(/-+/g, '-'); 
     const fileName = `${timestamp}-${sanitizedName}`;
 
     // Convert File to ArrayBuffer

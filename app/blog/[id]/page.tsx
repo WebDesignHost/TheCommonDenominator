@@ -55,15 +55,15 @@ export default function BlogPost({ params }: { params: Promise<{ id: string }> }
           cache: 'no-store',
           headers: { 'Cache-Control': 'no-cache' }
         });
-        const postData = await postResponse.json();
 
         if (!postResponse.ok) {
           if (postResponse.status === 404) {
             notFound();
           }
-          throw new Error(postData.error || 'Failed to fetch blog post');
+          throw new Error('Failed to fetch blog post');
         }
 
+        const postData = await postResponse.json();
         setPost(postData.post);
 
         // Fetch comments for this post

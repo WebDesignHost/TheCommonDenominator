@@ -27,7 +27,13 @@ export async function GET(
       .single();
 
     if (error) {
+      console.error(`Post fetch error for ${id}:`, error.message);
       return NextResponse.json({ error: error.message }, { status: 404 });
+    }
+
+    if (!data) {
+      console.error(`Post not found: ${id}`);
+      return NextResponse.json({ error: 'Post not found' }, { status: 404 });
     }
 
     const response = NextResponse.json({ post: data });

@@ -81,3 +81,25 @@ export async function signOut() {
   revalidatePath('/', 'layout')
   redirect('/')
 }
+
+export async function updateProfile(formData: FormData) {
+  const supabase = await createClient()
+  const username = formData.get('username') as string
+  const avatar_url = formData.get('avatar_url') as string
+
+  const { error } = await supabase.auth.updateUser({
+    data: {
+      username: username,
+      full_name: username,
+      avatar_url: avatar_url
+    }
+  })
+
+  if (error) {
+    return { error: error.message }
+  }
+
+  revalidatePath('/settings')
+  revalidatePath('/', 'layout')
+  return { success: true }
+}

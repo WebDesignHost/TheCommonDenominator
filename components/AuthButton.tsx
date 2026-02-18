@@ -15,22 +15,22 @@ export default async function AuthButton() {
 
     return (
       <div className="flex items-center gap-4">
-        <div className="flex items-center gap-2">
+        <Link href="/settings" className="flex items-center gap-2 group">
           {avatarUrl ? (
             <img 
               src={avatarUrl} 
               alt={displayName || 'User avatar'} 
-              className="w-8 h-8 rounded-full border border-[var(--color-border)]"
+              className="w-8 h-8 rounded-full border border-[var(--color-border)] group-hover:border-[var(--color-accent-1)] transition-colors object-cover"
             />
           ) : (
-            <div className="w-8 h-8 rounded-full bg-[var(--color-accent-1)] flex items-center justify-center text-black text-xs font-bold">
+            <div className="w-8 h-8 rounded-full bg-[var(--color-accent-1)] flex items-center justify-center text-black text-xs font-bold group-hover:opacity-80 transition-opacity">
               {displayName?.[0]?.toUpperCase() || 'U'}
             </div>
           )}
-          <span className="text-sm font-medium hidden lg:inline text-[var(--color-text-primary)]">
+          <span className="text-sm font-medium hidden lg:inline text-[var(--color-text-primary)] group-hover:text-[var(--color-accent-1)] transition-colors">
             {displayName}
           </span>
-        </div>
+        </Link>
         <form action={signOut}>
           <button className="text-sm text-[var(--color-text-secondary)] hover:text-[var(--color-accent-1)] transition-colors">
             Sign Out

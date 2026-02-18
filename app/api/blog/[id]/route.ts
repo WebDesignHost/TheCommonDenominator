@@ -48,19 +48,12 @@ export async function PUT(
       }
     }
 
-    // Prepare the update object - only use columns that definitely exist
-    const updateData: any = {
-      title,
-      excerpt,
-      content,
-      tags: typeof tags === 'string' ? tags : JSON.stringify(tags || []),
-      read_time,
-      status,
-      author_name,
-      publish_at: publish_at || null,
-      updated_at: new Date().toISOString(),
-      cover_image_url: cover_image_url || null // Use the verified column name
-    };
+    // Use the verified column name
+    if (cover_image_url !== undefined) {
+      updateData.cover_image_url = cover_image_url;
+    }
+
+    console.log(`Updating post ${id} with:`, updateData);
 
     const { data, error } = await supabaseAdmin
       .from('posts')
@@ -71,7 +64,14 @@ export async function PUT(
 
     if (error) {
       console.error('Supabase Update Error:', error);
-      return NextResponse.json({ error: error.message }, { status: 500 });
+      return NextResponse.json({ 
+        error: error.message,
+        details: error.details 
+      }, { status: 500 });
+    }
+
+    if (!data) {
+      return NextResponse.json({ error: 'Post not found' }, { status: 404 });
     }
 
     // Clear cache for everything related to this post
@@ -79,6 +79,7 @@ export async function PUT(
     revalidatePath(`/blog/${id}/edit`);
     revalidatePath('/blog');
     revalidatePath('/');
+    revalidatePath('/api/blog/[id]', 'page');
 
     return NextResponse.json({ 
       success: true, 

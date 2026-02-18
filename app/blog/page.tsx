@@ -36,7 +36,10 @@ export default function BlogIndex() {
   useEffect(() => {
     async function fetchPosts() {
       try {
-        const response = await fetch('/api/blog');
+        // Force fresh fetch for the blog list
+        const response = await fetch(`/api/blog?t=${Date.now()}`, {
+          cache: 'no-store'
+        });
         const data = await response.json();
 
         if (!response.ok) {

@@ -50,8 +50,11 @@ export default function BlogPost({ params }: { params: Promise<{ id: string }> }
   useEffect(() => {
     async function fetchData() {
       try {
-        // Fetch current post
-        const postResponse = await fetch(`/api/blog/${id}`);
+        // Fetch current post with a timestamp to avoid browser caching
+        const postResponse = await fetch(`/api/blog/${id}?t=${Date.now()}`, {
+          cache: 'no-store',
+          headers: { 'Cache-Control': 'no-cache' }
+        });
         const postData = await postResponse.json();
 
         if (!postResponse.ok) {

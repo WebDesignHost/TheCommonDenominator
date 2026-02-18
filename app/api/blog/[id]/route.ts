@@ -100,11 +100,17 @@ export async function PUT(
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
-    // Clear cache for the post and the homepage
+    // Clear cache for everything related to this post
     revalidatePath(`/blog/${id}`);
+    revalidatePath(`/blog/${id}/edit`);
+    revalidatePath('/blog');
     revalidatePath('/');
 
-    return NextResponse.json({ post: data });
+    return NextResponse.json({ 
+      success: true, 
+      post: data,
+      revalidated: new Date().toISOString()
+    });
   } catch (error) {
     return NextResponse.json(
       { error: 'Failed to update blog post' },

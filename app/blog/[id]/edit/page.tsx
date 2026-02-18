@@ -97,6 +97,12 @@ function EditBlogPostContent({ postId }: { postId: string }) {
         setCoverImageUrl(p.cover_image_url || p.cover_image || '');
         setAuthorName(p.author_name || '');
 
+        // Initialize date/time from post
+        const dateToUse = p.publish_at || p.publish_date || new Date().toISOString();
+        const dt = new Date(dateToUse);
+        setScheduledDate(dt.toISOString().split('T')[0]);
+        setScheduledTime(dt.toISOString().split('T')[1].slice(0, 5));
+
         // Parse tags
         let tagArray: string[] = [];
         if (Array.isArray(p.tags)) {
@@ -196,12 +202,15 @@ function EditBlogPostContent({ postId }: { postId: string }) {
       let publishAt: string | undefined;
       let status = 'draft';
 
-      if (publishOption === 'schedule') {
-        publishAt = new Date(`${scheduledDate}T${scheduledTime}`).toISOString();
+      if (publishOption === 'schedule' || publishOption === 'publish') {
+        if (scheduledDate && scheduledTime) {
+          publishAt = new Date(`${scheduledDate}T${scheduledTime}`).toISOString();
+        } else if (publishOption === 'publish') {
+          publishAt = new Date().toISOString();
+        } else {
+          throw new Error('Please select a date and time for scheduling');
+        }
         status = 'published';
-      } else if (publishOption === 'publish') {
-        status = 'published';
-        publishAt = new Date().toISOString();
       }
 
       const response = await fetch(`/api/blog/${postId}`, {
@@ -420,9 +429,33 @@ function EditBlogPostContent({ postId }: { postId: string }) {
                   onChange={(e) => setPublishOption(e.target.value as 'draft' | 'publish' | 'schedule')}
                   className="mt-0.5 w-4 h-4"
                 />
-                <div>
+                <div className="flex-1">
                   <span className="font-medium">Published</span>
-                  <p className="text-sm text-[var(--color-text-secondary)]">Visible to everyone</p>
+                  <p className="text-sm text-[var(--color-text-secondary)] mb-3">Visible to everyone</p>
+                  {publishOption === 'publish' && (
+                    <div className="grid grid-cols-2 gap-3 mt-2">
+                      <div>
+                        <label htmlFor="publishDate" className="block text-xs font-medium mb-1">Posted Date</label>
+                        <input
+                          type="date"
+                          id="publishDate"
+                          value={scheduledDate}
+                          onChange={(e) => setScheduledDate(e.target.value)}
+                          className="input text-sm"
+                        />
+                      </div>
+                      <div>
+                        <label htmlFor="publishTime" className="block text-xs font-medium mb-1">Posted Time (UTC)</label>
+                        <input
+                          type="time"
+                          id="publishTime"
+                          value={scheduledTime}
+                          onChange={(e) => setScheduledTime(e.target.value)}
+                          className="input text-sm"
+                        />
+                      </div>
+                    </div>
+                  )}
                 </div>
               </label>
 

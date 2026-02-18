@@ -64,9 +64,13 @@ export async function POST(
       content: content.trim(),
       client_id: client_id || 'anonymous',
       ip_hash: request.headers.get('x-forwarded-for') || null,
-      avatar_url: avatar_url || null,
       user_id: user?.id || null
     };
+
+    // Only add avatar_url if it's provided, to avoid schema cache issues
+    if (avatar_url) {
+      commentData.avatar_url = avatar_url;
+    }
 
     // Insert comment using service role
     const { data: comment, error: insertError } = await supabaseAdmin
@@ -108,16 +112,17 @@ export async function DELETE(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Verify ownership and delete (or soft delete)
-    // We use supabaseAdmin to ensure we can delete even if RLS is strict, 
-    // but we manually check the user_id matches
+    // Check if the user is the admin (you)
+    const isAdmin = user.email === 'aidan@Mac.lan' || user.email?.includes('aidan'); // Fallback check
+
+    // Verify ownership or admin status
     const { data: existingComment } = await supabaseAdmin
       .from('post_comments')
       .select('user_id')
       .eq('id', commentId)
       .single();
 
-    if (!existingComment || existingComment.user_id !== user.id) {
+    if (!isAdmin && (!existingComment || existingComment.user_id !== user.id)) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 

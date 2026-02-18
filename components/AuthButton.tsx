@@ -1,5 +1,6 @@
 import { createClient } from '@/utils/supabase/server'
-import { loginWithGoogle, signOut } from '@/app/auth/actions'
+import { signOut } from '@/app/auth/actions'
+import Link from 'next/link'
 
 export default async function AuthButton() {
   const supabase = await createClient()
@@ -9,18 +10,25 @@ export default async function AuthButton() {
   } = await supabase.auth.getUser()
 
   if (user) {
+    const avatarUrl = user.user_metadata.avatar_url
+    const displayName = user.user_metadata.full_name || user.email
+
     return (
       <div className="flex items-center gap-4">
         <div className="flex items-center gap-2">
-          {user.user_metadata.avatar_url && (
+          {avatarUrl ? (
             <img 
-              src={user.user_metadata.avatar_url} 
-              alt={user.user_metadata.full_name || 'User avatar'} 
+              src={avatarUrl} 
+              alt={displayName || 'User avatar'} 
               className="w-8 h-8 rounded-full border border-[var(--color-border)]"
             />
+          ) : (
+            <div className="w-8 h-8 rounded-full bg-[var(--color-accent-1)] flex items-center justify-center text-black text-xs font-bold">
+              {displayName?.[0]?.toUpperCase() || 'U'}
+            </div>
           )}
           <span className="text-sm font-medium hidden lg:inline text-[var(--color-text-primary)]">
-            {user.user_metadata.full_name || user.email}
+            {displayName}
           </span>
         </div>
         <form action={signOut}>
@@ -33,10 +41,8 @@ export default async function AuthButton() {
   }
 
   return (
-    <form action={loginWithGoogle}>
-      <button className="btn-secondary py-1.5 px-4 text-sm">
-        Sign In
-      </button>
-    </form>
+    <Link href="/login" className="btn-secondary py-1.5 px-4 text-sm">
+      Sign In
+    </Link>
   )
 }

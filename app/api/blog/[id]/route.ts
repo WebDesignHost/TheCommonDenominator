@@ -48,6 +48,19 @@ export async function PUT(
       }
     }
 
+    // Prepare the update object - only use columns that definitely exist
+    const updateData: any = {
+      title,
+      excerpt,
+      content,
+      tags: typeof tags === 'string' ? tags : JSON.stringify(tags || []),
+      read_time,
+      status,
+      author_name,
+      publish_at: publish_at || null,
+      updated_at: new Date().toISOString(),
+    };
+
     // Use the verified column name
     if (cover_image_url !== undefined) {
       updateData.cover_image_url = cover_image_url;

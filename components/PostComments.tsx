@@ -15,6 +15,8 @@ interface Comment {
   client_id: string;
   created_at: string;
   is_deleted: boolean;
+  avatar_url?: string;
+  user_id?: string;
 }
 
 interface PostCommentsProps {
@@ -81,9 +83,10 @@ export default function PostComments({ postId, initialComments }: PostCommentsPr
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           client_id: clientId,
-          nickname: nickname.trim() || null,
+          nickname: user?.user_metadata?.username || nickname.trim() || null,
           content: content.trim(),
-          parent_id: replyTo
+          parent_id: replyTo,
+          avatar_url: user?.user_metadata?.avatar_url || null
         })
       });
 
@@ -105,6 +108,25 @@ export default function PostComments({ postId, initialComments }: PostCommentsPr
       setError(err instanceof Error ? err.message : 'Failed to post comment');
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  const handleDelete = async (commentId: string) => {
+    if (!confirm('Are you sure you want to delete this comment?')) return;
+
+    try {
+      const response = await fetch(`/api/posts/${postId}/comments?commentId=${commentId}`, {
+        method: 'DELETE'
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || 'Failed to delete comment');
+      }
+
+      setComments(prev => prev.filter(c => c.id !== commentId));
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Failed to delete comment');
     }
   };
 
@@ -138,19 +160,36 @@ export default function PostComments({ postId, initialComments }: PostCommentsPr
   const CommentItem = ({ comment, isReply = false }: { comment: Comment; isReply?: boolean }) => (
     <div className={`${isReply ? 'ml-8 mt-3' : 'mb-4'} pb-4 ${!isReply ? 'border-b border-[var(--color-border)]' : ''}`}>
       <div className="flex items-start gap-3">
-        <div className="w-8 h-8 rounded-full bg-[var(--color-accent-1)]/20 flex items-center justify-center flex-shrink-0">
-          <span className="text-sm font-bold text-[var(--color-accent-1)]">
-            {(comment.nickname || 'Anonymous').charAt(0).toUpperCase()}
-          </span>
+        <div className="w-8 h-8 rounded-full bg-[var(--color-accent-1)]/20 flex items-center justify-center flex-shrink-0 overflow-hidden">
+          {comment.avatar_url ? (
+            <img src={comment.avatar_url} alt={comment.nickname || 'User'} className="w-full h-full object-cover" />
+          ) : (
+            <span className="text-sm font-bold text-[var(--color-accent-1)]">
+              {(comment.nickname || 'Anonymous').charAt(0).toUpperCase()}
+            </span>
+          )}
         </div>
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 mb-1">
-            <span className="font-semibold text-sm">
-              {comment.nickname || 'Anonymous'}
-            </span>
-            <span className="text-xs text-[var(--color-text-secondary)]">
-              {formatDate(comment.created_at)}
-            </span>
+          <div className="flex items-center justify-between gap-2 mb-1">
+            <div className="flex items-center gap-2">
+              <span className="font-semibold text-sm">
+                {comment.nickname || 'Anonymous'}
+              </span>
+              <span className="text-xs text-[var(--color-text-secondary)]">
+                {formatDate(comment.created_at)}
+              </span>
+            </div>
+            {user && user.id === comment.user_id && (
+              <button 
+                onClick={() => handleDelete(comment.id)}
+                className="text-[var(--color-text-secondary)] hover:text-red-500 transition-colors"
+                title="Delete comment"
+              >
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
+              </button>
+            )}
           </div>
           <p className="text-sm text-[var(--color-text-secondary)] whitespace-pre-wrap break-words">
             {comment.content}

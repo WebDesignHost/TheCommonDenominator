@@ -50,6 +50,21 @@ export default async function Home() {
   const latestPost = allPosts.length > 0 ? allPosts[0] : null;
   const featuredPosts = allPosts.slice(0, 3);
 
+  const team = [
+    {
+      name: "Adam",
+      role: "Co-Founder",
+      description: "Description about Adam goes here. You can edit this in app/page.tsx.",
+      image: "/logo.jpg" // Placeholder - update with actual image path
+    },
+    {
+      name: "Aidan",
+      role: "Co-Founder",
+      description: "Description about Aidan goes here. You can edit this in app/page.tsx.",
+      image: "/logo.jpg" // Placeholder - update with actual image path
+    }
+  ];
+
   return (
     <div className="pt-20">
       {/* Hero Section */}
@@ -58,10 +73,10 @@ export default async function Home() {
           <div className="grid md:grid-cols-2 gap-12 items-center">
             <div className="fade-in">
               <h1 className="text-5xl md:text-6xl font-bold mb-6 leading-tight">
-                Math that actually <span className="text-gradient">makes sense</span>
+                Our <span className="text-gradient">Goal</span>
               </h1>
-              <p className="Hero-subtext">
-                Making mathematical concepts fun and accessible through connections to everyday life. No boring textbooks here—just clear explanations and real-world examples.
+              <p className="Hero-subtext text-xl md:text-2xl leading-relaxed mb-8">
+                Our goal is to make traditional math fun by showing just how much it shows up in our day to day lives. We aim to explore these interesting connections in a story-like format by looking at things that are much more complex than they first appear.
               </p>
               <div className="flex flex-col sm:flex-row gap-4">
                 {latestPost && (
@@ -75,19 +90,41 @@ export default async function Home() {
               </div>
             </div>
             <div className="relative">
-  <div className="absolute -inset-0.5 rounded-3xl bg-gradient-to-r from-[var(--color-accent-1)]
-              to-[var(--color-accent-2)] opacity-30 blur-2xl"></div>
+              <div className="absolute -inset-0.5 rounded-3xl bg-gradient-to-r from-[var(--color-accent-1)]
+                          to-[var(--color-accent-2)] opacity-30 blur-2xl"></div>
 
-  <div className="relative rounded-3xl p-[2px] bg-gradient-to-r from-[var(--color-accent-1)]
-              to-[var(--color-accent-2)]">
-    <div className="relative rounded-3xl overflow-hidden aspect-[16/9] md:aspect-[3/2]">
-      <img src="/logo.jpg" alt="The Common Denominator Logo"
-           className="absolute inset-0 w-full h-full object-cover" />
-      <div className="pointer-events-none absolute inset-0 rounded-3xl ring-1 ring-white/10"></div>
-    </div>
-  </div>
-</div>
+              <div className="relative rounded-3xl p-[2px] bg-gradient-to-r from-[var(--color-accent-1)]
+                          to-[var(--color-accent-2)]">
+                <div className="relative rounded-3xl overflow-hidden aspect-[16/9] md:aspect-[3/2]">
+                  <img src="/logo.jpg" alt="The Common Denominator Logo"
+                       className="absolute inset-0 w-full h-full object-cover" />
+                  <div className="pointer-events-none absolute inset-0 rounded-3xl ring-1 ring-white/10"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
 
+      {/* Bio Section */}
+      <section className="py-24 bg-[var(--color-surface-1)]">
+        <div className="container">
+          <h2 className="text-5xl font-bold mb-16 text-center">The Team</h2>
+          <div className="grid md:grid-cols-2 gap-12">
+            {team.map((member) => (
+              <div key={member.name} className="card flex flex-col md:flex-row gap-8 items-center md:items-start p-8">
+                <div className="w-32 h-32 rounded-2xl overflow-hidden flex-shrink-0 bg-[var(--color-surface-2)]">
+                  <img src={member.image} alt={member.name} className="w-full h-full object-cover" />
+                </div>
+                <div>
+                  <h3 className="text-3xl font-bold mb-2 text-gradient">{member.name}</h3>
+                  <p className="text-sm font-semibold uppercase tracking-wider text-[var(--color-accent-1)] mb-4">{member.role}</p>
+                  <p className="text-[var(--color-text-secondary)] leading-relaxed">
+                    {member.description}
+                  </p>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       </section>
@@ -125,37 +162,6 @@ export default async function Home() {
           </div>
         </section>
       )}
-
-      {/* About Us */}
-      <section className="relative py-24 bg-gradient-to-b from-[#A084E8] via-[#9575de] to-[#8c66d4] overflow-hidden">
-        {/* Decorative elements */}
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute top-20 left-10 w-72 h-72 bg-white rounded-full blur-3xl"></div>
-          <div className="absolute bottom-20 right-10 w-96 h-96 bg-purple-300 rounded-full blur-3xl"></div>
-        </div>
-        
-        <div className="container relative z-10">
-          <div className="max-w-5xl mx-auto">
-            <h2 className="text-5xl md:text-6xl font-bold mb-12 leading-tight">
-              <span className="block text-white/90 mb-2">About Us</span>
-            </h2>
-            
-            <div className="space-y-8">
-              <p className="text-2xl md:text-3xl font-semibold text-white leading-relaxed">
-                We're <span className="text-gradient bg-clip-text text-transparent bg-gradient-to-r from-yellow-200 to-pink-200">Adam and Aidan</span>, and this is the Common Denominator, where <span className="italic">numbers meet narratives</span> and <span className="italic">logic explains life</span>.
-              </p>
-              
-              <p className="text-xl md:text-2xl text-white/90 leading-relaxed max-w-4xl">
-                Our goal is to explore the unexpected and surprising connections between different branches of math and the world around us, while also keeping it as down to earth and reader friendly as possible.
-              </p>
-              
-              <p className="text-xl md:text-2xl text-white/80 leading-relaxed max-w-4xl pt-4">
-                We hope that this mathematical journey will help you view math in a different light, and if you learn even one new thing every week, then our mission will be a success.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
     </div>
   );
 }

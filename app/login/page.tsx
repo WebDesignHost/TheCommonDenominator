@@ -16,9 +16,9 @@ export default function LoginPage() {
     
     const res = isSignUp ? await signupWithEmail(formData) : await loginWithEmail(formData)
     
-    if (res?.error) {
+    if (res && 'error' in res && res.error) {
       setError(res.error)
-    } else if (res?.message) {
+    } else if (res && 'message' in res && res.message) {
       setMessage(res.message)
     }
     setLoading(false)

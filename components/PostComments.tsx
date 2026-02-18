@@ -181,78 +181,71 @@ export default function PostComments({ postId, initialComments }: PostCommentsPr
 
       {/* Comment Form */}
       <div className="card mb-8">
-        {replyTo && (
-          <div className="mb-4 p-3 bg-[var(--color-surface-2)] rounded-lg flex items-center justify-between">
-            <span className="text-sm text-[var(--color-text-secondary)]">
-              Replying to comment
-            </span>
-            <button
-              onClick={() => setReplyTo(null)}
-              className="text-xs text-[var(--color-accent-1)] hover:underline"
-            >
-              Cancel
-            </button>
+        {!user ? (
+          <div className="py-6 text-center">
+            <p className="text-[var(--color-text-secondary)] mb-4">
+              Please sign in to share your thoughts and join the discussion.
+            </p>
+            <Link href="/login" className="btn-primary inline-block">
+              Sign In to Comment
+            </Link>
           </div>
+        ) : (
+          <>
+            {replyTo && (
+              <div className="mb-4 p-3 bg-[var(--color-surface-2)] rounded-lg flex items-center justify-between">
+                <span className="text-sm text-[var(--color-text-secondary)]">
+                  Replying to comment
+                </span>
+                <button
+                  onClick={() => setReplyTo(null)}
+                  className="text-xs text-[var(--color-accent-1)] hover:underline"
+                >
+                  Cancel
+                </button>
+              </div>
+            )}
+
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="flex items-center gap-2 mb-2">
+                <span className="text-sm font-medium text-[var(--color-text-secondary)]">Commenting as:</span>
+                <span className="text-sm font-bold text-[var(--color-accent-1)]">{user.user_metadata?.username}</span>
+              </div>
+
+              <div>
+                <label htmlFor="content" className="block text-sm font-medium mb-2">
+                  Comment *
+                </label>
+                <textarea
+                  id="content"
+                  value={content}
+                  onChange={(e) => setContent(e.target.value)}
+                  className="input min-h-[100px] resize-none"
+                  placeholder="Share your thoughts..."
+                  maxLength={1000}
+                  required
+                />
+                <div className="text-xs text-[var(--color-text-secondary)] mt-1">
+                  {content.length}/1000 characters
+                </div>
+              </div>
+
+              {error && (
+                <div className="p-3 bg-red-500/10 border border-red-500 rounded-lg text-red-500 text-sm">
+                  {error}
+                </div>
+              )}
+
+              <button
+                type="submit"
+                disabled={submitting || !content.trim()}
+                className="btn-primary"
+              >
+                {submitting ? 'Posting...' : replyTo ? 'Post Reply' : 'Post Comment'}
+              </button>
+            </form>
+          </>
         )}
-
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {!user ? (
-            <div>
-              <label htmlFor="nickname" className="block text-sm font-medium mb-2">
-                Name (optional)
-              </label>
-              <input
-                id="nickname"
-                type="text"
-                value={nickname}
-                onChange={(e) => setNickname(e.target.value)}
-                className="input"
-                placeholder="Your name"
-                maxLength={64}
-              />
-              <p className="text-xs text-[var(--color-text-secondary)] mt-2">
-                <Link href="/login" className="text-[var(--color-accent-1)] hover:underline">Sign in</Link> to use a permanent username.
-              </p>
-            </div>
-          ) : (
-            <div className="flex items-center gap-2 mb-2">
-              <span className="text-sm font-medium text-[var(--color-text-secondary)]">Commenting as:</span>
-              <span className="text-sm font-bold text-[var(--color-accent-1)]">{user.user_metadata?.username}</span>
-            </div>
-          )}
-
-          <div>
-            <label htmlFor="content" className="block text-sm font-medium mb-2">
-              Comment *
-            </label>
-            <textarea
-              id="content"
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
-              className="input min-h-[100px] resize-none"
-              placeholder="Share your thoughts..."
-              maxLength={1000}
-              required
-            />
-            <div className="text-xs text-[var(--color-text-secondary)] mt-1">
-              {content.length}/1000 characters
-            </div>
-          </div>
-
-          {error && (
-            <div className="p-3 bg-red-500/10 border border-red-500 rounded-lg text-red-500 text-sm">
-              {error}
-            </div>
-          )}
-
-          <button
-            type="submit"
-            disabled={submitting || !content.trim()}
-            className="btn-primary"
-          >
-            {submitting ? 'Posting...' : replyTo ? 'Post Reply' : 'Post Comment'}
-          </button>
-        </form>
       </div>
 
       {/* Comments List */}

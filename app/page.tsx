@@ -156,24 +156,6 @@ export default async function Home() {
           </div>
         </div>
       </section>
-      
-      {/* Community CTA */}
-        <section className="bg-gradient-to-b from-[#8c66d4] to-purple-600 py-16">
-        <div className="container">
-          <div className="relative overflow-hidden rounded-2xl p-12 text-center border-gradient">
-            <div className="absolute inset-0 bg-gradient-to-r from-[var(--color-accent-2)] to-[var(--color-accent-1)] opacity-10"></div>
-            <div className="relative z-10">
-              <h2 className="text-3xl font-bold mb-4">Got Questions? Let's Talk!</h2>
-              <p className="text-xl text-[var(--color-text-secondary)] mb-8 max-w-2xl mx-auto">
-                Join our friendly chat to discuss math concepts, share "aha!" moments, or just hang out with fellow math enthusiasts.
-              </p>
-              <Link href="/chat" className="btn-primary text-lg">
-                Join the Chat
-              </Link>
-            </div>
-          </div>
-        </div>
-      </section>
     </div>
   );
 }

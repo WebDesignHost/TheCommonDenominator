@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabase, supabaseAdmin } from '@/lib/supabase';
+import { revalidatePath } from 'next/cache';
 
 export const runtime = 'nodejs';
 
@@ -69,6 +70,10 @@ export async function PUT(
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
+
+    // Clear cache for the post and the homepage
+    revalidatePath(`/blog/${id}`);
+    revalidatePath('/');
 
     return NextResponse.json({ post: data });
   } catch (error) {

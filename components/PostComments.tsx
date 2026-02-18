@@ -115,7 +115,8 @@ export default function PostComments({ postId, initialComments }: PostCommentsPr
     if (!confirm('Are you sure you want to delete this comment?')) return;
 
     try {
-      const response = await fetch(`/api/posts/${postId}/comments?commentId=${commentId}`, {
+      const clientId = getClientId();
+      const response = await fetch(`/api/posts/${postId}/comments?commentId=${commentId}&clientId=${clientId}`, {
         method: 'DELETE'
       });
 
@@ -179,7 +180,7 @@ export default function PostComments({ postId, initialComments }: PostCommentsPr
                 {formatDate(comment.created_at)}
               </span>
             </div>
-            {user && user.id === comment.user_id && (
+            {(user?.id === comment.user_id || (user?.email?.includes('aidan')) || (!comment.user_id && getClientId() === comment.client_id)) && (
               <button 
                 onClick={() => handleDelete(comment.id)}
                 className="text-[var(--color-text-secondary)] hover:text-red-500 transition-colors"

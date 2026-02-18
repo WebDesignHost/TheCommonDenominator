@@ -64,27 +64,22 @@ export async function POST(
       content: content.trim(),
       client_id: client_id || 'anonymous',
       ip_hash: request.headers.get('x-forwarded-for') || null,
-      user_id: user?.id || null
+      user_id: user?.id || null,
+      avatar_url: avatar_url || null
     };
 
-    // Only add avatar_url if it's provided, to avoid schema cache issues
-    if (avatar_url) {
-      commentData.avatar_url = avatar_url;
-    }
-
     // Insert comment using service role
-    const { data: comment, error: insertError } = await supabaseAdmin
+    // We explicitly don't use .select() here to bypass potential schema cache issues
+    const { error: insertError } = await supabaseAdmin
       .from('post_comments')
-      .insert(commentData)
-      .select()
-      .single();
+      .insert(commentData);
 
     if (insertError) {
       console.error('Error inserting comment:', insertError);
       return NextResponse.json({ error: insertError.message }, { status: 500 });
     }
 
-    return NextResponse.json({ message: 'Comment added successfully', comment }, { status: 201 });
+    return NextResponse.json({ message: 'Comment added successfully' }, { status: 201 });
   } catch (error) {
     console.error('Add comment error:', error);
     return NextResponse.json({ error: 'Failed to add comment' }, { status: 500 });
@@ -92,7 +87,6 @@ export async function POST(
 }
 
 // DELETE /api/posts/[id]/comments - Delete a comment
-// Using a separate query parameter for the comment ID or body
 export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -100,6 +94,7 @@ export async function DELETE(
   try {
     const { searchParams } = new URL(request.url);
     const commentId = searchParams.get('commentId');
+    const clientId = searchParams.get('clientId'); // For legacy deletion
 
     if (!commentId) {
       return NextResponse.json({ error: 'Comment ID is required' }, { status: 400 });
@@ -108,27 +103,39 @@ export async function DELETE(
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
 
-    if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
-    // Check if the user is the admin (you)
-    const isAdmin = user.email === 'aidan@Mac.lan' || user.email?.includes('aidan'); // Fallback check
-
-    // Verify ownership or admin status
-    const { data: existingComment } = await supabaseAdmin
+    // Verify ownership and delete
+    const { data: comment, error: fetchError } = await supabaseAdmin
       .from('post_comments')
-      .select('user_id')
+      .select('user_id, client_id')
       .eq('id', commentId)
       .single();
 
-    if (!isAdmin && (!existingComment || existingComment.user_id !== user.id)) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    if (fetchError || !comment) {
+      return NextResponse.json({ error: 'Comment not found' }, { status: 404 });
+    }
+
+    let authorized = false;
+
+    // 1. Check if user is admin
+    if (user?.email === 'amighiaidan@gmail.com' || user?.email?.includes('aidan')) {
+      authorized = true;
+    } 
+    // 2. Check if user ID matches
+    else if (user && comment.user_id === user.id) {
+      authorized = true;
+    }
+    // 3. Check if client ID matches (for guest deletion or legacy)
+    else if (clientId && comment.client_id === clientId) {
+      authorized = true;
+    }
+
+    if (!authorized) {
+      return NextResponse.json({ error: 'Unauthorized to delete this comment' }, { status: 403 });
     }
 
     const { error: deleteError } = await supabaseAdmin
       .from('post_comments')
-      .update({ is_deleted: true }) // Soft delete
+      .update({ is_deleted: true })
       .eq('id', commentId);
 
     if (deleteError) {

@@ -54,13 +54,13 @@ export default async function Home() {
     {
       name: "Adam",
       role: "Co-Founder",
-      description: "Description about Adam goes here. You can edit this in app/page.tsx.",
+      description: "Hey, I'm Adam, a junior at Stuyvesant High School. I wanted to start the blog with Aidan because I like to explore the deep connections math has with everything around us. I've always found the fact that our universe is governed by mathematical relations really amazing, and I hope the blog will help to share some of these connections with others. In my free time I like to listen to music, chat with friends, and draw.",
       image: "/logo.jpg" // Placeholder - update with actual image path
     },
     {
       name: "Aidan",
       role: "Co-Founder",
-      description: "Description about Aidan goes here. You can edit this in app/page.tsx.",
+      description: "Hi, I'm Aidan, a junior at Stuyvesant. I was really interested in starting this blog with Adam because I've always been fascinated with learning about logic that's \"hidden in plain sight.\" Outside of the blog, I like to hang out with my friends and I love to listen to every kind of music.",
       image: "/logo.jpg" // Placeholder - update with actual image path
     }
   ];
@@ -76,7 +76,7 @@ export default async function Home() {
                 Our <span className="text-gradient">Goal</span>
               </h1>
               <p className="Hero-subtext text-xl md:text-2xl leading-relaxed mb-8">
-                Our goal is to make traditional math fun by showing just how much it shows up in our day to day lives. We aim to explore these interesting connections in a story-like format by looking at things that are much more complex than they first appear.
+                Our goal is to explore the endless connections between math and the real world in a way that's accessible and engaging to a wide audience. To draw people in, we try to frame our posts as historical stories before diving into the modern applications.
               </p>
               <div className="flex flex-col sm:flex-row gap-4">
                 {latestPost && (

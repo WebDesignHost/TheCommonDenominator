@@ -3,8 +3,6 @@
 import { useState, useEffect } from 'react';
 import { getClientId } from '@/lib/clientId';
 import { supabase } from '@/lib/supabase';
-import { createClient } from '@/utils/supabase/client';
-import Link from 'next/link';
 
 interface Comment {
   id: string;
@@ -15,8 +13,6 @@ interface Comment {
   client_id: string;
   created_at: string;
   is_deleted: boolean;
-  avatar_url?: string;
-  user_id?: string;
 }
 
 interface PostCommentsProps {
@@ -31,20 +27,6 @@ export default function PostComments({ postId, initialComments }: PostCommentsPr
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [replyTo, setReplyTo] = useState<string | null>(null);
-  const [user, setUser] = useState<any>(null);
-
-  const supabaseClient = createClient();
-
-  useEffect(() => {
-    async function getUser() {
-      const { data: { user } } = await supabaseClient.auth.getUser();
-      setUser(user);
-      if (user?.user_metadata?.username) {
-        setNickname(user.user_metadata.username);
-      }
-    }
-    getUser();
-  }, []);
   useEffect(() => {
     const channel = supabase
       .channel(`post_comments:${postId}`)
@@ -83,10 +65,9 @@ export default function PostComments({ postId, initialComments }: PostCommentsPr
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           client_id: clientId,
-          nickname: user?.user_metadata?.username || nickname.trim() || null,
+          nickname: nickname.trim() || null,
           content: content.trim(),
           parent_id: replyTo,
-          avatar_url: user?.user_metadata?.avatar_url || null
         })
       });
 
@@ -180,7 +161,7 @@ export default function PostComments({ postId, initialComments }: PostCommentsPr
                 {formatDate(comment.created_at)}
               </span>
             </div>
-            {(user?.id === comment.user_id || (user?.email?.includes('aidan')) || (!comment.user_id && getClientId() === comment.client_id)) && (
+            {getClientId() === comment.client_id && (
               <button 
                 onClick={() => handleDelete(comment.id)}
                 className="text-[var(--color-text-secondary)] hover:text-red-500 transition-colors"
@@ -221,71 +202,68 @@ export default function PostComments({ postId, initialComments }: PostCommentsPr
 
       {/* Comment Form */}
       <div className="card mb-8">
-        {!user ? (
-          <div className="py-6 text-center">
-            <p className="text-[var(--color-text-secondary)] mb-4">
-              Please sign in to share your thoughts and join the discussion.
-            </p>
-            <Link href="/login" className="btn-primary inline-block">
-              Sign In to Comment
-            </Link>
+        {replyTo && (
+          <div className="mb-4 p-3 bg-[var(--color-surface-2)] rounded-lg flex items-center justify-between">
+            <span className="text-sm text-[var(--color-text-secondary)]">
+              Replying to comment
+            </span>
+            <button
+              onClick={() => setReplyTo(null)}
+              className="text-xs text-[var(--color-accent-1)] hover:underline"
+            >
+              Cancel
+            </button>
           </div>
-        ) : (
-          <>
-            {replyTo && (
-              <div className="mb-4 p-3 bg-[var(--color-surface-2)] rounded-lg flex items-center justify-between">
-                <span className="text-sm text-[var(--color-text-secondary)]">
-                  Replying to comment
-                </span>
-                <button
-                  onClick={() => setReplyTo(null)}
-                  className="text-xs text-[var(--color-accent-1)] hover:underline"
-                >
-                  Cancel
-                </button>
-              </div>
-            )}
-
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="flex items-center gap-2 mb-2">
-                <span className="text-sm font-medium text-[var(--color-text-secondary)]">Commenting as:</span>
-                <span className="text-sm font-bold text-[var(--color-accent-1)]">{user.user_metadata?.username}</span>
-              </div>
-
-              <div>
-                <label htmlFor="content" className="block text-sm font-medium mb-2">
-                  Comment *
-                </label>
-                <textarea
-                  id="content"
-                  value={content}
-                  onChange={(e) => setContent(e.target.value)}
-                  className="input min-h-[100px] resize-none"
-                  placeholder="Share your thoughts..."
-                  maxLength={1000}
-                  required
-                />
-                <div className="text-xs text-[var(--color-text-secondary)] mt-1">
-                  {content.length}/1000 characters
-                </div>
-              </div>
-
-              {error && (
-                <div className="p-3 bg-red-500/10 border border-red-500 rounded-lg text-red-500 text-sm">
-                  {error}
-                </div>
-              )}
-
-              <button
-                type="submit"
-                disabled={submitting || !content.trim()}
-                className="btn-primary"
-              >
-                {submitting ? 'Posting...' : replyTo ? 'Post Reply' : 'Post Comment'}
-              </button>
-            </form>
-          </>
         )}
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label htmlFor="nickname" className="block text-sm font-medium mb-2">
+              Name (optional)
+            </label>
+            <input
+              id="nickname"
+              type="text"
+              value={nickname}
+              onChange={(e) => setNickname(e.target.value)}
+              className="input"
+              placeholder="Anonymous"
+              maxLength={50}
+            />
+          </div>
+
+          <div>
+            <label htmlFor="content" className="block text-sm font-medium mb-2">
+              Comment *
+            </label>
+            <textarea
+              id="content"
+              value={content}
+              onChange={(e) => setContent(e.target.value)}
+              className="input min-h-[100px] resize-none"
+              placeholder="Share your thoughts..."
+              maxLength={1000}
+              required
+            />
+            <div className="text-xs text-[var(--color-text-secondary)] mt-1">
+              {content.length}/1000 characters
+            </div>
+          </div>
+
+          {error && (
+            <div className="p-3 bg-red-500/10 border border-red-500 rounded-lg text-red-500 text-sm">
+              {error}
+            </div>
+          )}
+
+          <button
+            type="submit"
+            disabled={submitting || !content.trim()}
+            className="btn-primary"
+          >
+            {submitting ? 'Posting...' : replyTo ? 'Post Reply' : 'Post Comment'}
+          </button>
+        </form>
       </div>
 
       {/* Comments List */}

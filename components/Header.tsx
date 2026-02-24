@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState, useEffect } from 'react';
 
-export default function Header({ authButton }: { authButton: React.ReactNode }) {
+export default function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const pathname = usePathname();
@@ -71,11 +71,6 @@ export default function Header({ authButton }: { authButton: React.ReactNode }) 
               ))}
             </nav>
 
-            {/* Auth Button */}
-            <div className="hidden md:block">
-              {authButton}
-            </div>
-
             {/* Mobile Menu Button */}
             <button
               className="md:hidden p-2"
@@ -122,9 +117,6 @@ export default function Header({ authButton }: { authButton: React.ReactNode }) 
                   {link.label}
                 </Link>
               ))}
-              <div className="pt-2">
-                {authButton}
-              </div>
             </nav>
           </div>
         )}
